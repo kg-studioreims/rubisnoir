@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KG Studio - Rubis Noir</title>
+    <!-- Balises PWA / Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121212">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Script SDK PayPal (Intégré dans le Head) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=BAA13fAj2dSXBKbAVIFx039PnEUQ6NBk8qbZTcT_Yly5LtBjWJV2Kd_BU7eoOiNMf0JT6AXEYeeAIuya8&components=hosted-buttons&disable-funding=venmo&currency=EUR"></script>
+
+    <!-- Script SDK Google Identity Services (Google Sign-In) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <!-- ÉCRAN DE CONNEXION / INSCRIPTION (AVEC GOOGLE SIGN-IN) -->
+    <div id="view-auth" class="auth-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background-color: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
+        <div style="width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; text-align: center;">
+            <h1 style="color: #e50914; font-size: 2rem; margin-bottom: 0;">Rubis Noir</h1>
+            <p style="color: #888; font-size: 0.85rem; margin-top: 0;">Application de rencontres et d'échanges sécurisés</p>
+            
+            <div id="auth-form-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px; align-items: center;">
+                <!-- Bouton officiel Google Sign-In -->
+                <div id="g_id_onload"
+                     data-client_id="560049435242-df5euisq5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
+                     data-callback="handleGoogleSignIn"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="pill"
+                     data-theme="filled_black"
+                     data-text="signin_with"
+                     data-size="large"
+                     data-logo_alignment="left">
+                </div>
+
+                <div style="color: #666; font-size: 0.75rem; margin-top: 10px;">
+                    En continuant, vous certifiez être majeur et accepter la Charte Rubis Noir (minimum 2 photos requises après inscription).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- En-tête -->
+    <header class="app-header" id="main-header" style="display: none;">
+        <h1 class="app-title">Rubis Noir</h1>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="openSearch()">🔍</button>
+            <button class="icon-btn" onclick="openSettings()">⚙️</button>
+        </div>
+    </header>
+
+    <!-- VUE 1 : ACCUEIL -->
+    <main class="app-view" id="view-home" style="display: none;">
+        <div class="featured-section">
+            <h3 class="section-subtitle">✨ Profils du moment</h3>
+            <div class="featured-scroll" id="featured-profiles-container">
+                <p style="color: #666; font-size: 0.85rem; padding: 10px;">Aucun profil en vedette pour le moment.</p>
+            </div>
+        </div>
+
+        <h3 class="section-subtitle" style="margin-top: 15px;">Tous les profils</h3>
+        <div class="profiles-grid" id="all-profiles-container">
+            <p style="color: #666; font-size: 0.85rem; padding: 10px; grid-column: 1 / -1; text-align: center;">Aucun profil inscrit pour l'instant.</p>
+        </div>
+    </main>
+
+    <!-- VUE : DÉTAIL D'UN AUTRE PROFIL -->
+    <main class="app-view" id="view-user-detail" style="display: none;">
+        <div class="profile-view-container" style="padding-bottom: 30px;">
+            <button class="back-btn" onclick="closeUserDetail()" style="margin-bottom: 12px;">← Retour</button>
+            
+            <div class="my-profile-pic-container">
+                <img src="" alt="Profil" class="my-profile-pic" id="detail-main-img">
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;" id="detail-photos-gallery"></div>
+
+            <div class="my-profile-details" style="margin-top: 15px;">
+                <h2 id="detail-profile-title" style="margin: 0;">Nom</h2>
+                <p class="my-profile-city" id="detail-profile-city" style="margin: 4px 0;">📍 Reims</p>
+                <p class="my-profile-bio" id="detail-profile-bio" style="margin: 8px 0; color: #ccc;">Bio...</p>
+                
+                <button class="search-action-btn" style="background-color: #e50914; margin-top: 15px;" onclick="startChatFromDetail()">💬 Envoyer un message</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- VUE 2 : MESSAGES -->
+    <main class="app-view" id="view-messages" style="display: none;">
+        <div class="conversations-list" id="conversations-list-container">
+            <p style="color: #666; font-size: 0.85rem; padding: 20px; text-align: center;">Aucune conversation active.</p>
+        </div>
+    </main>
+
+    <!-- VUE 2-BIS : DISCUSSION INDIVIDUELLE -->
+    <main class="app-view" id="view-chat" style="display: none;">
+        <div class="chat-container">
+            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="back-btn" onclick="closeChat()">←</button>
+                    <h3 id="chat-with-name" style="margin: 0;">Discussion</h3>
+                </div>
+                <button onclick="openReportModal()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer;" title="Signaler ou bloquer">⚠️</button>
+            </div>
+            <div class="chat-messages" id="chat-messages-list"></div>
+            <div class="chat-input-area" style="display: flex; align-items: center; gap: 8px;">
+                <button class="icon-btn" onclick="document.getElementById('chat-file-input').click()" title="Envoyer une photo" style="font-size: 1.2rem; background: none; border: none; cursor: pointer;">🖼️</button>
+                <input type="file" id="chat-file-input" accept="image/*" style="display: none;" onchange="sendChatImage(this)">
+                <input type="text" id="chat-text-input" placeholder="Écrire un message..." class="chat-input" style="flex: 1;">
+                <button class="chat-send-btn" onclick="sendChatMessage()">Envoyer</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- VUE 3 : PROFIL -->
+    <main class="app-view" id="view-profile" style="display: none;">
+        <div class="profile-view-container" style="padding-bottom: 30px;">
+            <div id="photo-warning-banner" style="background-color: #e50914; color: #fff; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; margin-bottom: 12px; display: none;">
+                ⚠️ Sécurité Charte Rubis Noir : Veuillez ajouter au moins 2 photos pour débloquer l'accès complet à l'application.
+            </div>
+            
+            <div class="my-profile-pic-container">
+                <img src="https://via.placeholder.com/300x400?text=Ma+Photo" alt="Mon Profil" class="my-profile-pic" id="my-profile-img">
+            </div>
+
+            <div class="my-profile-details">
+                <h2 id="my-profile-title" style="margin: 0;">Mon Profil</h2>
+                <p class="my-profile-city" id="my-profile-display-city" style="margin: 4px 0;">📍 Reims</p>
+                <p class="my-profile-bio" id="my-profile-display-bio" style="margin: 8px 0; color: #ccc;">Membre de la communauté Rubis Noir.</p>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <h3 class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 8px;">Mes photos (Max 6)</h3>
+                <div id="my-photos-grid" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+            </div>
+
+            <button class="search-action-btn" style="background-color: #242424; border: 1px solid #444; margin-top: 15px;" onclick="openEditProfile()">✏️ Modifier mon profil & mes photos</button>
+        </div>
+    </main>
+
+    <!-- PANNEAU RECHERCHE PAR VILLE -->
+    <div class="settings-modal" id="modal-search" style="display: none;">
+        <div class="settings-content" style="max-width: 400px; display: flex; flex-direction: column;">
+            <div class="settings-header">
+                <h3>Rechercher par ville</h3>
+                <button class="close-btn" onclick="closeSearch()">✕</button>
+            </div>
+            <div class="search-body" style="display: flex; flex-direction: column; gap: 12px; position: relative; padding-top: 5px;">
+                <input type="text" id="city-search-input" placeholder="Ex: Reims, Paris, Épernay..." class="search-input" autocomplete="off">
+                <button class="search-action-btn" onclick="applySearch()">Rechercher</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANNEAU PARAMÈTRES -->
+    <div class="settings-modal" id="modal-settings" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Paramètres</h3>
+                <button class="close-btn" onclick="closeSettings()">✕</button>
+            </div>
+            <ul class="settings-list">
+                <li onclick="openEditProfile()">Modifier mon profil</li>
+                <li onclick="openSubscription()">Abonnement Rubis (PayPal / Google Play)</li>
+                <li onclick="openPrivacy()">Confidentialité, sécurité et CGU</li>
+                <li onclick="openReportModal()">Signaler un problème ou un abus</li>
+                <li onclick="openNotifications()">Notifications</li>
+                <li onclick="openAbout()">À propos de Rubis Noir</li>
+                <li class="logout-text" onclick="openLogout()">Déconnexion</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MODALE : SIGNALEMENT / BLOCAGE -->
+    <div class="settings-modal" id="modal-report" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Sécurité & Modération</h3>
+                <button class="close-btn" onclick="closeModal('modal-report')">✕</button>
+            </div>
+            <div class="search-body" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: #ccc; font-size: 0.85rem; margin: 0;">Conformément à la Charte Rubis Noir, signalez tout comportement inapproprié ou faux profil.</p>
+                <select id="report-reason" class="search-input" style="background-color: #242424; color: #fff;">
+                    <option value="harassment">Harcèlement ou propos inappropriés</option>
+                    <option value="fake">Faux profil / usurpation d'identité</option>
+                    <option value="spam">Spam / arnaque commerciale</option>
+                    <option value="other">Autre motif</option>
+                </select>
+                <textarea id="report-details" class="search-input" rows="3" placeholder="Précisez les détails du signalement..."></textarea>
+                <button class="search-action-btn" style="background-color: #e50914;" onclick="submitReport()">Envoyer le signalement</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE : MODIFIER MON PROFIL & ALBUMS PRIVÉS -->
+    <div class="settings-modal" id="modal-edit-profile" style="display: none;">
+        <div class="settings-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="settings-header">
+                <h3>Modifier mon profil</h3>
+                <button class="close-btn" onclick="closeModal('modal-edit-profile')">✕</button>
+            </div>
+            <div class="search-body">
+                <label style="font-size: 0.85rem; color: #888;">Mon Pseudo / Prénom</label>
+                <input type="text" id="edit-user-pseudo" class="search-input">
+                
+                <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Photos publiques (Minimum 2, Maximum 6)</label>
+                
+                <input type="file" id="gallery-file-input" accept="image/*" style="display: none;" onchange="handleRealPhotoUpload(this)">
+                <input type="file" id="camera-file-input" accept="image/*" capture="environment" style="display: none;" onchange="handleRealPhotoUpload(this)">
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="document.getElementById('gallery-file-input').click()">📁 Ajouter (Galerie)</button>
+                    <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="document.getElementById('camera-file-input').click()">📸 Prendre photo</button>
+                </div>
+                
+                <div id="modal-photos-grid-edit" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;"></div>
+
+                <!-- SECTION ALBUMS PRIVÉS -->
+                <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-size: 0.85rem; color: #e50914; font-weight: 600;">🔒 Mes Albums Privés</label>
+                        <span id="album-quota-label" style="font-size: 0.75rem; color: #888;">0 / 1 album (Gratuit)</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 10px 0;">Créez un album privé (max 8 photos par album). Passez à l'abonnement pour en débloquer jusqu'à 5.</p>
+                    
+                    <button class="search-action-btn" style="background-color: #242424; border: 1px solid #444; font-size: 0.85rem;" onclick="createNewPrivateAlbum()">➕ Créer un album privé</button>
+                    <div id="private-albums-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;"></div>
+                </div>
+
+                <label style="font-size: 0.85rem; color: #888; margin-top: 15px;">Bio / Description</label>
+                <textarea id="edit-user-bio" class="search-input" rows="3">Membre de la communauté Rubis Noir.</textarea>
+                
+                <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Ville</label>
+                <input type="text" id="edit-user-city" value="Reims" class="search-input">
+                
+                <button class="search-action-btn" style="margin-top: 15px;" onclick="saveProfileChanges()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE : ABONNEMENT -->
+    <div class="settings-modal" id="modal-subscription" style="display: none;">
+        <div class="settings-content" style="max-width: 420px;">
+            <div class="settings-header">
+                <h3>Abonnement Rubis</h3>
+                <button class="close-btn" onclick="closeModal('modal-subscription')">✕</button>
+            </div>
+            <div class="search-body" id="sub-content-unsubscribed">
+                <p style="color: #ccc; font-size: 0.9rem; text-align: center; margin: 0;">Passez à <strong>4,99 € / mois</strong> :</p>
+                <ul style="color: #aaa; font-size: 0.85rem; padding-left: 20px; margin: 5px 0; text-align: left;">
+                    <li>La mise en avant dans les <strong>Profils du moment</strong></li>
+                    <li>Le <strong>mode invisible</strong></li>
+                    <li>Jusqu'à <strong>5 albums privés</strong> (8 photos max par album)</li>
+                </ul>
+                <div style="margin: 15px 0; text-align: center;">
+                    <div id="paypal-container-DGE9FLKP4C7Q6"></div>
+                </div>
+                <button class="search-action-btn" style="background-color: #4285F4; margin-top: 5px;" onclick="processGooglePlayCheckout()">S'abonner via Google Play</button>
+            </div>
+            <div class="search-body" id="sub-content-subscribed" style="display: none;">
+                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre abonnement est actif</p>
+                <label class="toggle-label">
+                    <span>Mode invisible (masquer mon profil)</span>
+                    <input type="checkbox" id="toggle-invisible">
+                </label>
+                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="openEditProfile()">🔒 Gérer mes albums privés (Max 5)</button>
+                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="alert('Mise en avant prioritaire active sur l’accueil !')">✨ Voir ma mise en avant</button>
+                <button class="search-action-btn" onclick="closeModal('modal-subscription')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE : CONFIDENTIALITÉ & CGU -->
+    <div class="settings-modal" id="modal-privacy" style="display: none;">
+        <div class="settings-content" style="max-width: 500px; height: 85vh; display: flex; flex-direction: column;">
+            <div class="settings-header">
+                <h3>Confidentialité et CGU</h3>
+                <button class="close-btn" onclick="closeModal('modal-privacy')">✕</button>
+            </div>
+            <div class="search-body" style="flex: 1; overflow-y: auto; text-align: left; color: #bbb; font-size: 0.85rem; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
+                <p style="color: #fff; font-weight: 600; margin: 0;">Conditions Générales d'Utilisation (CGU) — Charte Rubis Noir</p>
+                <h4 style="color: #e50914; margin: 5px 0 0 0;">Article 1 — Conditions d'inscription et modération</h4>
+                <p style="margin: 0;">L'utilisation de l'application est strictement réservée aux personnes majeures. Chaque utilisateur s'engage à respecter la Charte Rubis Noir.</p>
+            </div>
+            <button class="search-action-btn" onclick="closeModal('modal-privacy')" style="margin-top: 10px;">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODALE : NOTIFICATIONS -->
+    <div class="settings-modal" id="modal-notifications" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Notifications</h3>
+                <button class="close-btn" onclick="closeModal('modal-notifications')">✕</button>
+            </div>
+            <div class="search-body">
+                <label class="toggle-label">
+                    <span>Notifications de messages</span>
+                    <input type="checkbox" checked>
+                </label>
+                <button class="search-action-btn" onclick="closeModal('modal-notifications')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE : À PROPOS -->
+    <div class="settings-modal" id="modal-about" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>À propos de Rubis Noir</h3>
+                <button class="close-btn" onclick="closeModal('modal-about')">✕</button>
+            </div>
+            <div class="search-body" style="text-align: center; color: #ccc; font-size: 0.9rem;">
+                <p><strong>Rubis Noir (KG Studio)</strong></p>
+                <p>Version 1.0.0</p>
+                <button class="search-action-btn" onclick="closeModal('modal-about')">Compris</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE : DÉCONNEXION -->
+    <div class="settings-modal" id="modal-logout" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Déconnexion</h3>
+                <button class="close-btn" onclick="closeModal('modal-logout')">✕</button>
+            </div>
+            <div class="search-body" style="text-align: center;">
+                <p style="color: #ccc; font-size: 0.9rem;">Voulez-vous vraiment vous déconnecter ?</p>
+                <button class="search-action-btn" style="background-color: #e50914;" onclick="performLogout()">Se déconnecter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation du bas -->
+    <nav class="main-nav" id="bottom-navigation" style="display: none;">
+        <button class="nav-btn active" id="btn-home" onclick="switchTab('home')">🔥 Accueil</button>
+        <button class="nav-btn" id="btn-messages" onclick="switchTab('messages')">💬 Messages</button>
+        <button class="nav-btn" id="btn-profile" onclick="switchTab('profile')">👤 Profil</button>
+    </nav>
+
+    <!-- Script PayPal -->
+    <script>
+      paypal.HostedButtons({
+        hostedButtonId: "DGE9FLKP4C7Q6"
+      }).render("#paypal-container-DGE9FLKP4C7Q6");
+    </script>
+
+    <!-- Script application & Google Sign-In -->
+    <script>
+        let isSubscribed = false;
+        let userPhotos = [];
+        let privateAlbums = [];
+        let searchTimeout = null;
+        let currentUser = {
+            pseudo: "Mon Profil",
+            email: "",
+            city: "Reims",
+            bio: "Membre de la communauté Rubis Noir."
+        };
+
+        let registeredProfiles = [];
+        let viewingProfileEmail = null;
+
+        // Fonction de décodage du jeton JWT renvoyé par Google
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        // Callback déclenché automatiquement lors de la connexion Google réussie
+        function handleGoogleSignIn(response) {
+            const responsePayload = parseJwt(response.credential);
+            
+            currentUser.email = responsePayload.email;
+            currentUser.pseudo = responsePayload.name || "Mon Profil";
+            userPhotos = [];
+            privateAlbums = [];
+
+            document.getElementById('my-profile-title').innerText = currentUser.pseudo;
+            document.getElementById('edit-user-pseudo').value = currentUser.pseudo;
+            document.getElementById('my-profile-img').src = responsePayload.picture || "https://via.placeholder.com/300x400?text=Ma+Photo";
+
+            document.getElementById('view-auth').style.display = 'none';
+            document.getElementById('main-header').style.display = 'flex';
+            document.getElementById('bottom-navigation').style.display = 'flex';
+            
+            updatePhotoStatusUI();
+            renderPrivateAlbumsUI();
+            switchTab('profile');
+        }
+
+        function performLogout() {
+            closeModal('modal-logout');
+            closeSettings();
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-user-detail').style.display = 'none';
+            document.getElementById('view-messages').style.display = 'none';
+            document.getElementById('view-profile').style.display = 'none';
+            document.getElementById('view-chat').style.display = 'none';
+            document.getElementById('main-header').style.display = 'none';
+            document.getElementById('bottom-navigation').style.display = 'none';
+            document.getElementById('view-auth').style.display = 'flex';
+            userPhotos = [];
+            privateAlbums = [];
+        }
+
+        function switchTab(tabName) {
+            if (userPhotos.length < 2 && tabName !== 'profile') {
+                alert("Accès restreint : Veuillez d'abord ajouter vos 2 photos réglementaires sur votre profil.");
+                tabName = 'profile';
+            }
+
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-user-detail').style.display = 'none';
+            document.getElementById('view-messages').style.display = 'none';
+            document.getElementById('view-profile').style.display = 'none';
+            document.getElementById('view-chat').style.display = 'none';
+            document.getElementById('bottom-navigation').style.display = 'flex';
+
+            document.getElementById('btn-home').classList.remove('active');
+            document.getElementById('btn-messages').classList.remove('active');
+            document.getElementById('btn-profile').classList.remove('active');
+
+            document.getElementById('view-' + tabName).style.display = 'block';
+            if(tabName !== 'chat' && tabName !== 'user-detail') {
+                document.getElementById('btn-' + tabName).classList.add('active');
+            }
+        }
+
+        function handleRealPhotoUpload(input) {
+            if (input.files && input.files[0]) {
+                if (userPhotos.length >= 6) {
+                    alert("Limite atteinte : Vous pouvez enregistrer un maximum de 6 photos.");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    userPhotos.push(e.target.result);
+                    
+                    if (userPhotos.length === 1 && !currentUser.googlePic) {
+                        document.getElementById('my-profile-img').src = e.target.result;
+                    }
+
+                    updatePhotoStatusUI();
+                    renderMyPhotosGrids();
+                    registerUserToCommunity();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function deleteMyPhoto(index) {
+            if (userPhotos.length <= 2) {
+                alert("Attention : La Charte Rubis Noir impose un minimum de 2 photos. Vous ne pouvez pas supprimer cette photo sans en rajouter une autre au préalable.");
+                return;
+            }
+            userPhotos.splice(index, 1);
+            if (userPhotos.length > 0) {
+                document.getElementById('my-profile-img').src = userPhotos[0];
+            } else {
+                document.getElementById('my-profile-img').src = "https://via.placeholder.com/300x400?text=Ma+Photo";
+            }
+            updatePhotoStatusUI();
+            renderMyPhotosGrids();
+            registerUserToCommunity();
+        }
+
+        function renderMyPhotosGrids() {
+            const profileGrid = document.getElementById('my-photos-grid');
+            profileGrid.innerHTML = '';
+            const editGrid = document.getElementById('modal-photos-grid-edit');
+            editGrid.innerHTML = '';
+
+            userPhotos.forEach((src, index) => {
+                const wrap1 = document.createElement('div');
+                wrap1.style.cssText = "position: relative; width: 60px; height: 75px;";
+                wrap1.innerHTML = `<img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444;">`;
+                profileGrid.appendChild(wrap1);
+
+                const wrap2 = document.createElement('div');
+                wrap2.style.cssText = "position: relative; width: 60px; height: 75px;";
+                wrap2.innerHTML = `
+                    <img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444;">
+                    <button onclick="deleteMyPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #e50914; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+                `;
+                editGrid.appendChild(wrap2);
+            });
+        }
+
+        function createNewPrivateAlbum() {
+            const maxAlbums = isSubscribed ? 5 : 1;
+            if (privateAlbums.length >= maxAlbums) {
+                if (!isSubscribed) {
+                    alert("Limite atteinte : Les comptes gratuits sont limités à 1 album privé. Passez à l'abonnement Rubis pour créer jusqu'à 5 albums !");
+                    openSubscription();
+                } else {
+                    alert("Limite atteinte : Vous avez atteint le maximum de 5 albums privés.");
+                }
+                return;
+            }
+
+            const albumName = prompt("Nom de l'album privé :", `Album ${privateAlbums.length + 1}`);
+            if (!albumName) return;
+
+            privateAlbums.push({
+                name: albumName,
+                photos: []
+            });
+            renderPrivateAlbumsUI();
+        }
+
+        function renderPrivateAlbumsUI() {
+            const container = document.getElementById('private-albums-container');
+            const quotaLabel = document.getElementById('album-quota-label');
+            const maxAlbums = isSubscribed ? 5 : 1;
+            
+            quotaLabel.innerText = `${privateAlbums.length} / ${maxAlbums} album${maxAlbums > 1 ? 's' : ''} (${isSubscribed ? 'Abonné' : 'Gratuit'})`;
+            container.innerHTML = '';
+
+            if (privateAlbums.length === 0) {
+                container.innerHTML = '<p style="color: #666; font-size: 0.8rem; margin: 0;">Aucun album privé créé.</p>';
+                return;
+            }
+
+            privateAlbums.forEach((album, albumIndex) => {
+                const albumDiv = document.createElement('div');
+                albumDiv.style.cssText = "background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px;";
+                
+                let photosHtml = '';
+                album.photos.forEach((photoSrc, photoIndex) => {
+                    photosHtml += `
+                        <div style="position: relative; width: 50px; height: 60px;">
+                            <img src="${photoSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #444;">
+                            <button onclick="deletePhotoFromAlbum(${albumIndex}, ${photoIndex})" style="position: absolute; top: -4px; right: -4px; background: #e50914; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+                        </div>
+                    `;
+                });
+
+                albumDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.85rem; color: #fff; font-weight: 600;">📁 ${album.name} (${album.photos.length}/8)</span>
+                        <div>
+                            <button onclick="addPhotoToAlbum(${albumIndex})" style="background: #333; color: #fff; border: none; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; margin-right: 4px;">+ Photo</button>
+                            <button onclick="deletePrivateAlbum(${albumIndex})" style="background: #e50914; color: #fff; border: none; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Supprimer</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="album-photos-${albumIndex}">
+                        ${photosHtml}
+                    </div>
+                `;
+                container.appendChild(albumDiv);
+            });
+        }
+
+        function addPhotoToAlbum(albumIndex) {
+            if (privateAlbums[albumIndex].photos.length >= 8) {
+                alert("Cet album a atteint sa limite maximale de 8 photos.");
+                return;
+            }
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = e => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        privateAlbums[albumIndex].photos.push(event.target.result);
+                        renderPrivateAlbumsUI();
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            };
+            fileInput.click();
+        }
+
+        function deletePhotoFromAlbum(albumIndex, photoIndex) {
+            privateAlbums[albumIndex].photos.splice(photoIndex, 1);
+            renderPrivateAlbumsUI();
+        }
+
+        function deletePrivateAlbum(albumIndex) {
+            if (confirm("Voulez-vous vraiment supprimer cet album privé ?")) {
+                privateAlbums.splice(albumIndex, 1);
+                renderPrivateAlbumsUI();
+            }
+        }
+
+        function registerUserToCommunity() {
+            const existingIndex = registeredProfiles.findIndex(p => p.email === currentUser.email);
+            const profileData = { ...currentUser, photos: [...userPhotos], albums: [...privateAlbums] };
+            if (existingIndex === -1) {
+                registeredProfiles.push(profileData);
+            } else {
+                registeredProfiles[existingIndex] = profileData;
+            }
+            renderProfilesGrid();
+        }
+
+        function renderProfilesGrid() {
+            const gridContainer = document.getElementById('all-profiles-container');
+            const featuredContainer = document.getElementById('featured-profiles-container');
+
+            if (registeredProfiles.length === 0) {
+                gridContainer.innerHTML = '<p style="color: #666; font-size: 0.85rem; padding: 10px; grid-column: 1 / -1; text-align: center;">Aucun profil inscrit pour l\'instant.</p>';
+                featuredContainer.innerHTML = '<p style="color: #666; font-size: 0.85rem; padding: 10px;">Aucun profil en vedette pour le moment.</p>';
+                return;
+            }
+
+            gridContainer.innerHTML = '';
+            featuredContainer.innerHTML = '';
+
+            registeredProfiles.forEach(profile => {
+                const displayName = profile.pseudo || "Membre";
+                const avatarImg = (profile.photos && profile.photos.length > 0) ? profile.photos[0] : "https://via.placeholder.com/150x200?text=" + encodeURIComponent(displayName);
+                
+                const card = document.createElement('div');
+                card.className = 'profile-card status-online';
+                card.onclick = () => {
+                    if (profile.email === currentUser.email) {
+                        switchTab('profile');
+                    } else {
+                        openUserProfileDetail(profile.email);
+                    }
+                };
+                card.innerHTML = `
+                    <img src="${avatarImg}" alt="${displayName}" class="profile-pic">
+                    <div class="profile-info">
+                        <span class="profile-name">${displayName}</span>
+                        <span class="profile-city">${profile.city}</span>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+
+                const featCard = document.createElement('div');
+                featCard.className = 'featured-card';
+                featCard.onclick = () => {
+                    if (profile.email === currentUser.email) {
+                        switchTab('profile');
+                    } else {
+                        openUserProfileDetail(profile.email);
+                    }
+                };
+                featCard.innerHTML = `
+                    <img src="${avatarImg}" alt="${displayName}">
+                    <span>${displayName}</span>
+                `;
+                featuredContainer.appendChild(featCard);
+            });
+        }
+
+        function openUserProfileDetail(email) {
+            if (userPhotos.length < 2) {
+                alert("Veuillez valider vos 2 photos de profil pour voir les autres profils.");
+                return;
+            }
+
+            const profile = registeredProfiles.find(p => p.email === email);
+            if (!profile) return;
+
+            viewingProfileEmail = email;
+
+            document.getElementById('detail-profile-title').innerText = profile.pseudo;
+            document.getElementById('detail-profile-city').innerText = `📍 ${profile.city}`;
+            document.getElementById('detail-profile-bio').innerText = profile.bio;
+
+            const mainImg = (profile.photos && profile.photos.length > 0) ? profile.photos[0] : "https://via.placeholder.com/300x400?text=Profil";
+            document.getElementById('detail-main-img').src = mainImg;
+
+            const galleryContainer = document.getElementById('detail-photos-gallery');
+            galleryContainer.innerHTML = '';
+
+            if (profile.photos && profile.photos.length > 0) {
+                profile.photos.forEach(photoSrc => {
+                    const thumb = document.createElement('img');
+                    thumb.src = photoSrc;
+                    thumb.style.cssText = "width: 55px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #444; cursor: pointer;";
+                    thumb.onclick = () => {
+                        document.getElementById('detail-main-img').src = photoSrc;
+                    };
+                    galleryContainer.appendChild(thumb);
+                });
+            }
+
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-user-detail').style.display = 'block';
+            document.getElementById('bottom-navigation').style.display = 'none';
+        }
+
+        function closeUserDetail() {
+            document.getElementById('view-user-detail').style.display = 'none';
+            document.getElementById('view-home').style.display = 'block';
+            document.getElementById('bottom-navigation').style.display = 'flex';
+        }
+
+        function startChatFromDetail() {
+            const profile = registeredProfiles.find(p => p.email === viewingProfileEmail);
+            if (profile) {
+                openChat(profile.pseudo);
+            }
+        }
+
+        function updatePhotoStatusUI() {
+            const warningBanner = document.getElementById('photo-warning-banner');
+            const count = userPhotos.length;
+
+            if (count >= 2) {
+                if (warningBanner) warningBanner.style.display = 'none';
+            } else {
+                if (warningBanner) warningBanner.style.display = 'block';
+            }
+        }
+
+        function saveProfileChanges() {
+            if (userPhotos.length < 2) {
+                alert("Impossible d'enregistrer : La Charte Rubis Noir exige un minimum de 2 photos sur votre profil.");
+                return;
+            }
+
+            const newPseudo = document.getElementById('edit-user-pseudo').value.trim();
+            if (newPseudo) {
+                currentUser.pseudo = newPseudo;
+                document.getElementById('my-profile-title').innerText = newPseudo;
+            }
+            currentUser.bio = document.getElementById('edit-user-bio').value;
+            currentUser.city = document.getElementById('edit-user-city').value;
+
+            document.getElementById('my-profile-display-city').innerText = `📍 ${currentUser.city}`;
+            document.getElementById('my-profile-display-bio').innerText = currentUser.bio;
+            
+            closeModal('modal-edit-profile');
+            registerUserToCommunity();
+            alert("Profil mis à jour avec succès !");
+        }
+
+        function openChat(name) {
+            if (userPhotos.length < 2) {
+                alert("Veuillez valider vos 2 photos de profil pour pouvoir discuter.");
+                return;
+            }
+            document.getElementById('chat-with-name').innerText = name;
+            document.getElementById('view-home').style.display = 'none';
+            document.getElementById('view-user-detail').style.display = 'none';
+            document.getElementById('view-messages').style.display = 'none';
+            document.getElementById('view-chat').style.display = 'block';
+            document.getElementById('bottom-navigation').style.display = 'none';
+            
+            document.getElementById('chat-messages-list').innerHTML = '<div style="text-align: center; color: #666; font-size: 0.8rem; margin: 10px 0;">Début de la conversation sécurisée</div>';
+        }
+
+        function closeChat() {
+            document.getElementById('view-chat').style.display = 'none';
+            document.getElementById('view-messages').style.display = 'block';
+            document.getElementById('bottom-navigation').style.display = 'flex';
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-text-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatList = document.getElementById('chat-messages-list');
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble sent';
+            bubble.innerText = text;
+            chatList.appendChild(bubble);
+
+            input.value = '';
+            chatList.scrollTop = chatList.scrollHeight;
+        }
+
+        function sendChatImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const chatList = document.getElementById('chat-messages-list');
+                    const bubble = document.createElement('div');
+                    bubble.className = 'chat-bubble sent';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.cssText = "max-width: 180px; border-radius: 8px; display: block;";
+                    
+                    bubble.appendChild(img);
+                    chatList.appendChild(bubble);
+                    chatList.scrollTop = chatList.scrollHeight;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function openSettings() { document.getElementById('modal-settings').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
+        function openEditProfile() { 
+            closeSettings(); 
+            renderPrivateAlbumsUI();
+            document.getElementById('modal-edit-profile').style.display = 'flex'; 
+        }
+        function openSubscription() {
+            closeSettings();
+            if (isSubscribed) {
+                document.getElementById('sub-content-unsubscribed').style.display = 'none';
+                document.getElementById('sub-content-subscribed').style.display = 'flex';
+            } else {
+                document.getElementById('sub-content-unsubscribed').style.display = 'flex';
+                document.getElementById('sub-content-subscribed').style.display = 'none';
+            }
+            document.getElementById('modal-subscription').style.display = 'flex';
+        }
+        function processGooglePlayCheckout() {
+            isSubscribed = true;
+            alert("Redirection vers Google Play Billing... Paiement de 4,99 € validé avec succès !");
+            openSubscription();
+            renderPrivateAlbumsUI();
+        }
+        function openPrivacy() { closeSettings(); document.getElementById('modal-privacy').style.display = 'flex'; }
+        function openReportModal() { closeSettings(); document.getElementById('modal-report').style.display = 'flex'; }
+        function submitReport() {
+            alert("Signalement transmis au support et au système de modération Charte Rubis Noir. Merci.");
+            document.getElementById('report-details').value = '';
+            closeModal('modal-report');
+        }
+        function openNotifications() { closeSettings(); document.getElementById('modal-notifications').style.display = 'flex'; }
+        function openAbout() { closeSettings(); document.getElementById('modal-about').style.display = 'flex'; }
+        function openLogout() { closeSettings(); document.getElementById('modal-logout').style.display = 'flex'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        function openSearch() { document.getElementById('modal-search').style.display = 'flex'; }
+        function closeSearch() { document.getElementById('modal-search').style.display = 'none'; hideCitySuggestions(); }
+
+        document.getElementById('city-search-input').addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            clearTimeout(searchTimeout);
+            if (query.length < 2) { hideCitySuggestions(); return; }
+            searchTimeout = setTimeout(() => {
+                fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(query)}&fields=nom,codePostal&boost=population&limit=5`)
+                    .then(response => response.json())
+                    .then(data => showCitySuggestions(data))
+                    .catch(err => console.error("Erreur API communes:", err));
+            }, 300);
+        });
+
+        function showCitySuggestions(communes) {
+            let container = document.getElementById('city-suggestions-list');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'city-suggestions-list';
+                container.style.cssText = "position: absolute; top: 100%; left: 0; background: #242424; border: 1px solid #333; border-radius: 8px; width: 100%; max-height: 150px; overflow-y: auto; z-index: 10; margin-top: 4px;";
+                document.querySelector('.search-body').appendChild(container);
+            }
+            container.innerHTML = '';
+            if (communes.length === 0) {
+                container.innerHTML = '<div style="padding: 10px; color: #888; font-size: 0.85rem;">Aucune ville trouvée en France</div>';
+                return;
+            }
+            communes.forEach(commune => {
+                const item = document.createElement('div');
+                const cp = commune.codePostal ? ` (${commune.codePostal})` : '';
+                item.style.cssText = "padding: 10px; color: #fff; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #1a1a1a;";
+                item.innerText = `${commune.nom}${cp}`;
+                item.onmouseover = () => item.style.backgroundColor = '#2e2e2e';
+                item.onmouseout = () => item.style.backgroundColor = 'transparent';
+                item.onclick = () => {
+                    document.getElementById('city-search-input').value = commune.nom;
+                    hideCitySuggestions();
+                };
+                container.appendChild(item);
+            });
+        }
+
+        function hideCitySuggestions() {
+            const container = document.getElementById('city-suggestions-list');
+            if (container) container.remove();
+        }
+
+        function applySearch() {
+            const cityInput = document.getElementById('city-search-input').value.trim();
+            hideCitySuggestions();
+            if (!cityInput) { alert("Veuillez saisir une ville."); return; }
+            fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(cityInput)}&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        alert("Cette ville n'existe pas dans la base officielle française.");
+                    } else {
+                        alert(`Filtre appliqué pour : ${data[0].nom} (${data[0].codePostal || ''})`);
+                        closeSearch();
+                    }
+                })
+                .catch(() => alert("Erreur lors de la vérification de la ville."));
+        }
+    </script>
+</body>
+</html>
