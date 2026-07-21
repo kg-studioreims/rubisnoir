@@ -19,16 +19,15 @@
 </head>
 <body>
 
-    <!-- ÉCRAN DE CONNEXION / INSCRIPTION (AVEC GOOGLE SIGN-IN) -->
+    <!-- ÉCRAN DE CONNEXION / INSCRIPTION -->
     <div id="view-auth" class="auth-container" style="display: {% if user %}none{% else %}flex{% endif %}; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background-color: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
         <div style="width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; text-align: center;">
             <h1 style="color: #e50914; font-size: 2rem; margin-bottom: 0;">Rubis Noir</h1>
             <p style="color: #888; font-size: 0.85rem; margin-top: 0;">Application de rencontres et d'échanges sécurisés</p>
            
             <div id="auth-form-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px; align-items: center;">
-                <!-- Bouton officiel Google Sign-In -->
                 <div id="g_id_onload"
-                     data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
+                     data-client_id="560049435242-df5euisq5nhg5q7rsldimfa8bdun5go6.apps.googleusercontent.com"
                      data-callback="handleGoogleSignIn"
                      data-auto_prompt="false">
                 </div>
@@ -52,6 +51,10 @@
     <header class="app-header" id="main-header" style="display: {% if user %}flex{% else %}none{% endif %};">
         <h1 class="app-title">Rubis Noir</h1>
         <div class="header-actions">
+            <!-- Bouton Panneau Admin visible uniquement pour kg.studio.reims@gmail.com -->
+            {% if is_admin %}
+                <button class="icon-btn" onclick="openAdminPanel()" title="Tableau de bord Admin">🛡️</button>
+            {% endif %}
             <button class="icon-btn" onclick="openSearch()">🔍</button>
             <button class="icon-btn" onclick="openSettings()">⚙️</button>
         </div>
@@ -64,35 +67,6 @@
             <div class="featured-scroll" id="featured-profiles-container">
                 <p style="color: #666; font-size: 0.85rem; padding: 10px;">Aucun profil en vedette pour le moment.</p>
             </div>
-        </div>
-
-        <h3 class="section-subtitle" style="margin-top: 15px;">Fil d'actualité de la communauté</h3>
-        
-        <!-- Formulaire de publication (Connecté à Flask / SQLite) -->
-        <div style="padding: 10px; background: #1e1e1e; border-radius: 8px; margin-bottom: 15px;">
-            <form action="{{ url_for('add_post') }}" method="POST">
-                <textarea name="content" placeholder="Partagez quelque chose avec la communauté..." required style="width: 100%; height: 70px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 8px; resize: none;"></textarea>
-                <button type="submit" style="background: #e50914; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.85rem;">Publier</button>
-            </form>
-        </div>
-
-        <!-- Affichage dynamique des posts stockés dans SQLite -->
-        <div id="posts-container">
-            {% for post in posts %}
-                <div style="background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e50914;">
-                    <small style="color: #888;">Par <strong>{{ post[2] }}</strong> ({{ post[1] }}) - {{ post[4] }}</small>
-                    <p style="margin-top: 8px; word-break: break-word; color: #fff;">{{ post[3] }}</p>
-                    
-                    <!-- Bouton Admin (visible uniquement pour kg.studio.reims@gmail.com) -->
-                    {% if is_admin %}
-                        <form action="{{ url_for('delete_post', post_id=post[0]) }}" method="POST" style="margin-top: 10px;">
-                            <button type="submit" style="background: #333; color: #ff4444; border: 1px solid #ff4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">[Tableau de bord Admin] Supprimer ce contenu</button>
-                        </form>
-                    {% endif %}
-                </div>
-            {% else %}
-                <p style="color: #666; font-size: 0.85rem; padding: 10px; text-align: center;">Aucune publication pour le moment.</p>
-            {% endfor %}
         </div>
 
         <h3 class="section-subtitle" style="margin-top: 15px;">Tous les profils</h3>
@@ -189,6 +163,32 @@
         </div>
     </div>
 
+    <!-- TABLEAU DE BORD ADMINISTRATEUR (MODÉRATION SUR SIGNALEMENT) -->
+    <div class="settings-modal" id="modal-admin" style="display: none;">
+        <div class="settings-content" style="max-width: 550px; height: 85vh; display: flex; flex-direction: column;">
+            <div class="settings-header">
+                <h3>🛡️ Tableau de bord Admin — Signalements</h3>
+                <button class="close-btn" onclick="closeModal('modal-admin')">✕</button>
+            </div>
+            <div class="search-body" style="flex: 1; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
+                <p style="color: #aaa; font-size: 0.8rem; margin: 0;">Liste des signalements de la communauté nécessitant une vérification des pièces jointes et des échanges signalés.</p>
+                <div id="admin-reports-container" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px;">
+                        <span style="color: #e50914; font-size: 0.85rem; font-weight: 600;">⚠️ Signalement #102 — Harcèlement</span>
+                        <p style="color: #ccc; font-size: 0.8rem; margin: 6px 0;">Utilisateur signalé : <strong>Marc93</strong> (Signalé par Kevin)</p>
+                        <div style="background: #121212; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #888; margin-bottom: 8px;">
+                            [Extrait joint] : « Envoi de photos non sollicitées à 22h14 »
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="alert('Compte Marc93 banni définitivement.')" style="background: #e50914; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Bannir l'utilisateur</button>
+                            <button onclick="alert('Signalement classé sans suite.')" style="background: #333; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Ignorer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PANNEAU PARAMÈTRES -->
     <div class="settings-modal" id="modal-settings" style="display: none;">
         <div class="settings-content">
@@ -223,8 +223,8 @@
                     <option value="spam">Spam / arnaque commerciale</option>
                     <option value="other">Autre motif</option>
                 </select>
-                <textarea id="report-details" class="search-input" rows="3" placeholder="Précisez les détails du signalement..."></textarea>
-                <button class="search-action-btn" style="background-color: #e50914;" onclick="submitReport()">Envoyer le signalement</button>
+                <textarea id="report-details" class="search-input" rows="3" placeholder="Précisez les détails du signalement (messages, photos en cause)..."></textarea>
+                <button class="search-action-btn" style="background-color: #e50914;" onclick="submitReport()">Envoyer le signalement à l'Admin</button>
             </div>
         </div>
     </div>
@@ -252,7 +252,6 @@
                
                 <div id="modal-photos-grid-edit" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;"></div>
 
-                <!-- SECTION ALBUMS PRIVÉS -->
                 <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-size: 0.85rem; color: #e50914; font-weight: 600;">🔒 Mes Albums Privés</label>
@@ -364,7 +363,6 @@
             </div>
             <div class="search-body" style="text-align: center;">
                 <p style="color: #ccc; font-size: 0.9rem;">Voulez-vous vraiment vous déconnecter ?</p>
-                <!-- Redirection vers la route Flask de déconnexion -->
                 <a href="{{ url_for('logout') }}" style="display: block; background-color: #e50914; color: white; padding: 10px; border-radius: 4px; text-decoration: none; margin-top: 10px; font-size: 0.9rem;">Se déconnecter</a>
             </div>
         </div>
@@ -400,7 +398,6 @@
         let registeredProfiles = [];
         let viewingProfileEmail = null;
 
-        // Callback déclenché automatiquement lors de la connexion Google réussie (transmet à Flask via formulaire)
         function handleGoogleSignIn(response) {
             const responsePayload = parseJwt(response.credential);
            
@@ -820,6 +817,7 @@
 
         function openSettings() { document.getElementById('modal-settings').style.display = 'flex'; }
         function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
+        function openAdminPanel() { document.getElementById('modal-admin').style.display = 'flex'; }
         function openEditProfile() {
             closeSettings();
             renderPrivateAlbumsUI();
@@ -845,7 +843,7 @@
         function openPrivacy() { closeSettings(); document.getElementById('modal-privacy').style.display = 'flex'; }
         function openReportModal() { closeSettings(); document.getElementById('modal-report').style.display = 'flex'; }
         function submitReport() {
-            alert("Signalement transmis au support et au système de modération Charte Rubis Noir. Merci.");
+            alert("Signalement transmis au support et au tableau de bord administrateur Charte Rubis Noir. Merci.");
             document.getElementById('report-details').value = '';
             closeModal('modal-report');
         }
