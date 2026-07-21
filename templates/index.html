@@ -8,8 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- Script SDK PayPal (Intégré dans le Head) -->
     <script src="https://www.paypal.com/sdk/js?client-id=BAA13fAj2dSXBKbAVIFx039PnEUQ6NBk8qbZTcT_Yly5LtBjWJV2Kd_BU7eoOiNMf0JT6AXEYeeAIuya8&components=hosted-buttons&disable-funding=venmo&currency=EUR"></script>
