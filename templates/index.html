@@ -11,10 +11,10 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- Script SDK PayPal (Intégré dans le Head) -->
+    <!-- Script SDK PayPal -->
     <script src="https://www.paypal.com/sdk/js?client-id=BAA13fAj2dSXBKbAVIFx039PnEUQ6NBk8qbZTcT_Yly5LtBjWJV2Kd_BU7eoOiNMf0JT6AXEYeeAIuya8&components=hosted-buttons&disable-funding=venmo&currency=EUR"></script>
 
-    <!-- Script SDK Google Identity Services (Google Sign-In) -->
+    <!-- Script SDK Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -51,7 +51,6 @@
     <header class="app-header" id="main-header" style="display: {% if user %}flex{% else %}none{% endif %};">
         <h1 class="app-title">Rubis Noir</h1>
         <div class="header-actions">
-            <!-- Bouton Panneau Admin visible uniquement pour kg.studio.reims@gmail.com -->
             {% if is_admin %}
                 <button class="icon-btn" onclick="openAdminPanel()" title="Tableau de bord Admin">🛡️</button>
             {% endif %}
@@ -163,27 +162,17 @@
         </div>
     </div>
 
-    <!-- TABLEAU DE BORD ADMINISTRATEUR (MODÉRATION SUR SIGNALEMENT) -->
+    <!-- TABLEAU DE BORD ADMINISTRATEUR -->
     <div class="settings-modal" id="modal-admin" style="display: none;">
         <div class="settings-content" style="max-width: 550px; height: 85vh; display: flex; flex-direction: column;">
             <div class="settings-header">
-                <h3>🛡️ Tableau de bord Admin — Signalements</h3>
+                <h3>🛡️ Tableau de bord Admin</h3>
                 <button class="close-btn" onclick="closeModal('modal-admin')">✕</button>
             </div>
             <div class="search-body" style="flex: 1; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
-                <p style="color: #aaa; font-size: 0.8rem; margin: 0;">Liste des signalements de la communauté nécessitant une vérification des pièces jointes et des échanges signalés.</p>
+                <p style="color: #aaa; font-size: 0.8rem; margin: 0;">Centre de modération : les signalements de la communauté s'afficheront ici avec l'historique récent et les pièces jointes à vérifier.</p>
                 <div id="admin-reports-container" style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px;">
-                        <span style="color: #e50914; font-size: 0.85rem; font-weight: 600;">⚠️ Signalement #102 — Harcèlement</span>
-                        <p style="color: #ccc; font-size: 0.8rem; margin: 6px 0;">Utilisateur signalé : <strong>Marc93</strong> (Signalé par Kevin)</p>
-                        <div style="background: #121212; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #888; margin-bottom: 8px;">
-                            [Extrait joint] : « Envoi de photos non sollicitées à 22h14 »
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="alert('Compte Marc93 banni définitivement.')" style="background: #e50914; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Bannir l'utilisateur</button>
-                            <button onclick="alert('Signalement classé sans suite.')" style="background: #333; color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Ignorer</button>
-                        </div>
-                    </div>
+                    <p style="color: #666; font-size: 0.85rem; text-align: center; margin-top: 20px;">Aucun signalement en attente.</p>
                 </div>
             </div>
         </div>
@@ -223,7 +212,7 @@
                     <option value="spam">Spam / arnaque commerciale</option>
                     <option value="other">Autre motif</option>
                 </select>
-                <textarea id="report-details" class="search-input" rows="3" placeholder="Précisez les détails du signalement (messages, photos en cause)..."></textarea>
+                <textarea id="report-details" class="search-input" rows="3" placeholder="Précisez les détails du signalement..."></textarea>
                 <button class="search-action-btn" style="background-color: #e50914;" onclick="submitReport()">Envoyer le signalement à l'Admin</button>
             </div>
         </div>
@@ -257,7 +246,7 @@
                         <label style="font-size: 0.85rem; color: #e50914; font-weight: 600;">🔒 Mes Albums Privés</label>
                         <span id="album-quota-label" style="font-size: 0.75rem; color: #888;">0 / 1 album (Gratuit)</span>
                     </div>
-                    <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 10px 0;">Créez un album privé (max 8 photos par album). Passez à l'abonnement pour en débloquer jusqu'à 5.</p>
+                    <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 10px 0;">Créez un album privé (max 8 photos par album).</p>
                    
                     <button class="search-action-btn" style="background-color: #242424; border: 1px solid #444; font-size: 0.85rem;" onclick="createNewPrivateAlbum()">➕ Créer un album privé</button>
                     <div id="private-albums-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;"></div>
@@ -284,9 +273,9 @@
             <div class="search-body" id="sub-content-unsubscribed">
                 <p style="color: #ccc; font-size: 0.9rem; text-align: center; margin: 0;">Passez à <strong>4,99 € / mois</strong> :</p>
                 <ul style="color: #aaa; font-size: 0.85rem; padding-left: 20px; margin: 5px 0; text-align: left;">
-                    <li>La mise en avant dans les <strong>Profils du moment</strong></li>
-                    <li>Le <strong>mode invisible</strong></li>
-                    <li>Jusqu'à <strong>5 albums privés</strong> (8 photos max par album)</li>
+                    <li>Mise en avant dans les <strong>Profils du moment</strong></li>
+                    <li><strong>Mode invisible</strong></li>
+                    <li>Jusqu'à <strong>5 albums privés</strong></li>
                 </ul>
                 <div style="margin: 15px 0; text-align: center;">
                     <div id="paypal-container-DGE9FLKP4C7Q6"></div>
@@ -299,8 +288,7 @@
                     <span>Mode invisible (masquer mon profil)</span>
                     <input type="checkbox" id="toggle-invisible">
                 </label>
-                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="openEditProfile()">🔒 Gérer mes albums privés (Max 5)</button>
-                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="alert('Mise en avant prioritaire active sur l’accueil !')">✨ Voir ma mise en avant</button>
+                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="openEditProfile()">🔒 Gérer mes albums privés</button>
                 <button class="search-action-btn" onclick="closeModal('modal-subscription')">Fermer</button>
             </div>
         </div>
@@ -314,9 +302,7 @@
                 <button class="close-btn" onclick="closeModal('modal-privacy')">✕</button>
             </div>
             <div class="search-body" style="flex: 1; overflow-y: auto; text-align: left; color: #bbb; font-size: 0.85rem; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
-                <p style="color: #fff; font-weight: 600; margin: 0;">Conditions Générales d'Utilisation (CGU) — Charte Rubis Noir</p>
-                <h4 style="color: #e50914; margin: 5px 0 0 0;">Article 1 — Conditions d'inscription et modération</h4>
-                <p style="margin: 0;">L'utilisation de l'application est strictement réservée aux personnes majeures. Chaque utilisateur s'engage à respecter la Charte Rubis Noir.</p>
+                <p style="color: #fff; font-weight: 600; margin: 0;">Conditions Générales d'Utilisation — Charte Rubis Noir</p>
             </div>
             <button class="search-action-btn" onclick="closeModal('modal-privacy')" style="margin-top: 10px;">Fermer</button>
         </div>
@@ -382,7 +368,7 @@
       }).render("#paypal-container-DGE9FLKP4C7Q6");
     </script>
 
-    <!-- Script application & Google Sign-In -->
+    <!-- Script application -->
     <script>
         let isSubscribed = false;
         let userPhotos = [];
@@ -400,7 +386,6 @@
 
         function handleGoogleSignIn(response) {
             const responsePayload = parseJwt(response.credential);
-           
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = "{{ url_for('login') }}";
@@ -462,11 +447,9 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userPhotos.push(e.target.result);
-                   
                     if (userPhotos.length === 1 && !currentUser.googlePic) {
                         document.getElementById('my-profile-img').src = e.target.result;
                     }
-
                     updatePhotoStatusUI();
                     renderMyPhotosGrids();
                     registerUserToCommunity();
@@ -477,15 +460,11 @@
 
         function deleteMyPhoto(index) {
             if (userPhotos.length <= 2) {
-                alert("Attention : La Charte Rubis Noir impose un minimum de 2 photos. Vous ne pouvez pas supprimer cette photo sans en rajouter une autre au préalable.");
+                alert("Attention : La Charte Rubis Noir impose un minimum de 2 photos.");
                 return;
             }
             userPhotos.splice(index, 1);
-            if (userPhotos.length > 0) {
-                document.getElementById('my-profile-img').src = userPhotos[0];
-            } else {
-                document.getElementById('my-profile-img').src = "https://via.placeholder.com/300x400?text=Ma+Photo";
-            }
+            document.getElementById('my-profile-img').src = userPhotos.length > 0 ? userPhotos[0] : "https://via.placeholder.com/300x400?text=Ma+Photo";
             updatePhotoStatusUI();
             renderMyPhotosGrids();
             registerUserToCommunity();
@@ -516,22 +495,13 @@
         function createNewPrivateAlbum() {
             const maxAlbums = isSubscribed ? 5 : 1;
             if (privateAlbums.length >= maxAlbums) {
-                if (!isSubscribed) {
-                    alert("Limite atteinte : Les comptes gratuits sont limités à 1 album privé. Passez à l'abonnement Rubis pour créer jusqu'à 5 albums !");
-                    openSubscription();
-                } else {
-                    alert("Limite atteinte : Vous avez atteint le maximum de 5 albums privés.");
-                }
+                alert(isSubscribed ? "Limite de 5 albums atteinte." : "Comptes gratuits limités à 1 album privé.");
+                if (!isSubscribed) openSubscription();
                 return;
             }
-
             const albumName = prompt("Nom de l'album privé :", `Album ${privateAlbums.length + 1}`);
             if (!albumName) return;
-
-            privateAlbums.push({
-                name: albumName,
-                photos: []
-            });
+            privateAlbums.push({ name: albumName, photos: [] });
             renderPrivateAlbumsUI();
         }
 
@@ -540,7 +510,7 @@
             const quotaLabel = document.getElementById('album-quota-label');
             const maxAlbums = isSubscribed ? 5 : 1;
            
-            quotaLabel.innerText = `${privateAlbums.length} / ${maxAlbums} album${maxAlbums > 1 ? 's' : ''} (${isSubscribed ? 'Abonné' : 'Gratuit'})`;
+            quotaLabel.innerText = `${privateAlbums.length} / ${maxAlbums} album${maxAlbums > 1 ? 's' : ''}`;
             container.innerHTML = '';
 
             if (privateAlbums.length === 0) {
@@ -570,9 +540,7 @@
                             <button onclick="deletePrivateAlbum(${albumIndex})" style="background: #e50914; color: #fff; border: none; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Supprimer</button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="album-photos-${albumIndex}">
-                        ${photosHtml}
-                    </div>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">${photosHtml}</div>
                 `;
                 container.appendChild(albumDiv);
             });
@@ -583,7 +551,6 @@
                 alert("Cet album a atteint sa limite maximale de 8 photos.");
                 return;
             }
-
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
@@ -606,7 +573,7 @@
         }
 
         function deletePrivateAlbum(albumIndex) {
-            if (confirm("Voulez-vous vraiment supprimer cet album privé ?")) {
+            if (confirm("Supprimer cet album privé ?")) {
                 privateAlbums.splice(albumIndex, 1);
                 renderPrivateAlbumsUI();
             }
@@ -615,11 +582,8 @@
         function registerUserToCommunity() {
             const existingIndex = registeredProfiles.findIndex(p => p.email === currentUser.email);
             const profileData = { ...currentUser, photos: [...userPhotos], albums: [...privateAlbums] };
-            if (existingIndex === -1) {
-                registeredProfiles.push(profileData);
-            } else {
-                registeredProfiles[existingIndex] = profileData;
-            }
+            if (existingIndex === -1) registeredProfiles.push(profileData);
+            else registeredProfiles[existingIndex] = profileData;
             renderProfilesGrid();
         }
 
@@ -642,13 +606,7 @@
                
                 const card = document.createElement('div');
                 card.className = 'profile-card status-online';
-                card.onclick = () => {
-                    if (profile.email === currentUser.email) {
-                        switchTab('profile');
-                    } else {
-                        openUserProfileDetail(profile.email);
-                    }
-                };
+                card.onclick = () => profile.email === currentUser.email ? switchTab('profile') : openUserProfileDetail(profile.email);
                 card.innerHTML = `
                     <img src="${avatarImg}" alt="${displayName}" class="profile-pic">
                     <div class="profile-info">
@@ -660,50 +618,34 @@
 
                 const featCard = document.createElement('div');
                 featCard.className = 'featured-card';
-                featCard.onclick = () => {
-                    if (profile.email === currentUser.email) {
-                        switchTab('profile');
-                    } else {
-                        openUserProfileDetail(profile.email);
-                    }
-                };
-                featCard.innerHTML = `
-                    <img src="${avatarImg}" alt="${displayName}">
-                    <span>${displayName}</span>
-                `;
+                featCard.onclick = () => profile.email === currentUser.email ? switchTab('profile') : openUserProfileDetail(profile.email);
+                featCard.innerHTML = `<img src="${avatarImg}" alt="${displayName}"><span>${displayName}</span>`;
                 featuredContainer.appendChild(featCard);
             });
         }
 
         function openUserProfileDetail(email) {
             if (userPhotos.length < 2) {
-                alert("Veuillez valider vos 2 photos de profil pour voir les autres profils.");
+                alert("Veuillez valider vos 2 photos de profil.");
                 return;
             }
-
             const profile = registeredProfiles.find(p => p.email === email);
             if (!profile) return;
-
             viewingProfileEmail = email;
 
             document.getElementById('detail-profile-title').innerText = profile.pseudo;
             document.getElementById('detail-profile-city').innerText = `📍 ${profile.city}`;
             document.getElementById('detail-profile-bio').innerText = profile.bio;
-
-            const mainImg = (profile.photos && profile.photos.length > 0) ? profile.photos[0] : "https://via.placeholder.com/300x400?text=Profil";
-            document.getElementById('detail-main-img').src = mainImg;
+            document.getElementById('detail-main-img').src = (profile.photos && profile.photos.length > 0) ? profile.photos[0] : "https://via.placeholder.com/300x400?text=Profil";
 
             const galleryContainer = document.getElementById('detail-photos-gallery');
             galleryContainer.innerHTML = '';
-
-            if (profile.photos && profile.photos.length > 0) {
+            if (profile.photos) {
                 profile.photos.forEach(photoSrc => {
                     const thumb = document.createElement('img');
                     thumb.src = photoSrc;
                     thumb.style.cssText = "width: 55px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #444; cursor: pointer;";
-                    thumb.onclick = () => {
-                        document.getElementById('detail-main-img').src = photoSrc;
-                    };
+                    thumb.onclick = () => document.getElementById('detail-main-img').src = photoSrc;
                     galleryContainer.appendChild(thumb);
                 });
             }
@@ -721,28 +663,19 @@
 
         function startChatFromDetail() {
             const profile = registeredProfiles.find(p => p.email === viewingProfileEmail);
-            if (profile) {
-                openChat(profile.pseudo);
-            }
+            if (profile) openChat(profile.pseudo);
         }
 
         function updatePhotoStatusUI() {
             const warningBanner = document.getElementById('photo-warning-banner');
-            const count = userPhotos.length;
-
-            if (count >= 2) {
-                if (warningBanner) warningBanner.style.display = 'none';
-            } else {
-                if (warningBanner) warningBanner.style.display = 'block';
-            }
+            if (warningBanner) warningBanner.style.display = userPhotos.length >= 2 ? 'none' : 'block';
         }
 
         function saveProfileChanges() {
             if (userPhotos.length < 2) {
-                alert("Impossible d'enregistrer : La Charte Rubis Noir exige un minimum de 2 photos sur votre profil.");
+                alert("Impossible d'enregistrer : minimum 2 photos requises.");
                 return;
             }
-
             const newPseudo = document.getElementById('edit-user-pseudo').value.trim();
             if (newPseudo) {
                 currentUser.pseudo = newPseudo;
@@ -761,7 +694,7 @@
 
         function openChat(name) {
             if (userPhotos.length < 2) {
-                alert("Veuillez valider vos 2 photos de profil pour pouvoir discuter.");
+                alert("Veuillez valider vos 2 photos pour discuter.");
                 return;
             }
             document.getElementById('chat-with-name').innerText = name;
@@ -770,7 +703,6 @@
             document.getElementById('view-messages').style.display = 'none';
             document.getElementById('view-chat').style.display = 'block';
             document.getElementById('bottom-navigation').style.display = 'none';
-           
             document.getElementById('chat-messages-list').innerHTML = '<div style="text-align: center; color: #666; font-size: 0.8rem; margin: 10px 0;">Début de la conversation sécurisée</div>';
         }
 
@@ -784,13 +716,11 @@
             const input = document.getElementById('chat-text-input');
             const text = input.value.trim();
             if (!text) return;
-
             const chatList = document.getElementById('chat-messages-list');
             const bubble = document.createElement('div');
             bubble.className = 'chat-bubble sent';
             bubble.innerText = text;
             chatList.appendChild(bubble);
-
             input.value = '';
             chatList.scrollTop = chatList.scrollHeight;
         }
@@ -802,11 +732,9 @@
                     const chatList = document.getElementById('chat-messages-list');
                     const bubble = document.createElement('div');
                     bubble.className = 'chat-bubble sent';
-                   
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.style.cssText = "max-width: 180px; border-radius: 8px; display: block;";
-                   
+                    img.style.cssText = "max-width: 180px; border-radius: 8px; display: block; cursor: pointer;";
                     bubble.appendChild(img);
                     chatList.appendChild(bubble);
                     chatList.scrollTop = chatList.scrollHeight;
@@ -825,25 +753,20 @@
         }
         function openSubscription() {
             closeSettings();
-            if (isSubscribed) {
-                document.getElementById('sub-content-unsubscribed').style.display = 'none';
-                document.getElementById('sub-content-subscribed').style.display = 'flex';
-            } else {
-                document.getElementById('sub-content-unsubscribed').style.display = 'flex';
-                document.getElementById('sub-content-subscribed').style.display = 'none';
-            }
+            document.getElementById('sub-content-unsubscribed').style.display = isSubscribed ? 'none' : 'flex';
+            document.getElementById('sub-content-subscribed').style.display = isSubscribed ? 'flex' : 'none';
             document.getElementById('modal-subscription').style.display = 'flex';
         }
         function processGooglePlayCheckout() {
             isSubscribed = true;
-            alert("Redirection vers Google Play Billing... Paiement de 4,99 € validé avec succès !");
+            alert("Paiement de 4,99 € validé via Google Play !");
             openSubscription();
             renderPrivateAlbumsUI();
         }
         function openPrivacy() { closeSettings(); document.getElementById('modal-privacy').style.display = 'flex'; }
         function openReportModal() { closeSettings(); document.getElementById('modal-report').style.display = 'flex'; }
         function submitReport() {
-            alert("Signalement transmis au support et au tableau de bord administrateur Charte Rubis Noir. Merci.");
+            alert("Signalement transmis à l'administrateur.");
             document.getElementById('report-details').value = '';
             closeModal('modal-report');
         }
@@ -852,68 +775,25 @@
         function openLogout() { closeSettings(); document.getElementById('modal-logout').style.display = 'flex'; }
         function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
         function openSearch() { document.getElementById('modal-search').style.display = 'flex'; }
-        function closeSearch() { document.getElementById('modal-search').style.display = 'none'; hideCitySuggestions(); }
+        function closeSearch() { document.getElementById('modal-search').style.display = 'none'; }
 
         document.getElementById('city-search-input').addEventListener('input', function(e) {
             const query = e.target.value.trim();
             clearTimeout(searchTimeout);
-            if (query.length < 2) { hideCitySuggestions(); return; }
+            if (query.length < 2) return;
             searchTimeout = setTimeout(() => {
                 fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(query)}&fields=nom,codePostal&boost=population&limit=5`)
                     .then(response => response.json())
-                    .then(data => showCitySuggestions(data))
-                    .catch(err => console.error("Erreur API communes:", err));
+                    .then(data => console.log(data))
+                    .catch(err => console.error(err));
             }, 300);
         });
 
-        function showCitySuggestions(communes) {
-            let container = document.getElementById('city-suggestions-list');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'city-suggestions-list';
-                container.style.cssText = "position: absolute; top: 100%; left: 0; background: #242424; border: 1px solid #333; border-radius: 8px; width: 100%; max-height: 150px; overflow-y: auto; z-index: 10; margin-top: 4px;";
-                document.querySelector('.search-body').appendChild(container);
-            }
-            container.innerHTML = '';
-            if (communes.length === 0) {
-                container.innerHTML = '<div style="padding: 10px; color: #888; font-size: 0.85rem;">Aucune ville trouvée en France</div>';
-                return;
-            }
-            communes.forEach(commune => {
-                const item = document.createElement('div');
-                const cp = commune.codePostal ? ` (${commune.codePostal})` : '';
-                item.style.cssText = "padding: 10px; color: #fff; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #1a1a1a;";
-                item.innerText = `${commune.nom}${cp}`;
-                item.onmouseover = () => item.style.backgroundColor = '#2e2e2e';
-                item.onmouseout = () => item.style.backgroundColor = 'transparent';
-                item.onclick = () => {
-                    document.getElementById('city-search-input').value = commune.nom;
-                    hideCitySuggestions();
-                };
-                container.appendChild(item);
-            });
-        }
-
-        function hideCitySuggestions() {
-            const container = document.getElementById('city-suggestions-list');
-            if (container) container.remove();
-        }
-
         function applySearch() {
             const cityInput = document.getElementById('city-search-input').value.trim();
-            hideCitySuggestions();
-            if (!cityInput) { alert("Veuillez saisir une ville."); return; }
-            fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(cityInput)}&limit=1`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length === 0) {
-                        alert("Cette ville n'existe pas dans la base officielle française.");
-                    } else {
-                        alert(`Filtre appliqué pour : ${data[0].nom} (${data[0].codePostal || ''})`);
-                        closeSearch();
-                    }
-                })
-                .catch(() => alert("Erreur lors de la vérification de la ville."));
+            if (!cityInput) { alert("Saisir une ville."); return; }
+            closeSearch();
+            alert("Filtre de recherche appliqué.");
         }
     </script>
 </body>
