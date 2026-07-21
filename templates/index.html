@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- Script SDK PayPal (Intégré dans le Head) -->
@@ -20,15 +20,15 @@
 <body>
 
     <!-- ÉCRAN DE CONNEXION / INSCRIPTION (AVEC GOOGLE SIGN-IN) -->
-    <div id="view-auth" class="auth-container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background-color: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
+    <div id="view-auth" class="auth-container" style="display: {% if user %}none{% else %}flex{% endif %}; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background-color: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
         <div style="width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; text-align: center;">
             <h1 style="color: #e50914; font-size: 2rem; margin-bottom: 0;">Rubis Noir</h1>
             <p style="color: #888; font-size: 0.85rem; margin-top: 0;">Application de rencontres et d'échanges sécurisés</p>
-            
+           
             <div id="auth-form-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px; align-items: center;">
                 <!-- Bouton officiel Google Sign-In -->
                 <div id="g_id_onload"
-                     data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
+                     data-client_id="560049435242-df5euisq5nhg5q7rsldimfa8bdun5go6.apps.googleusercontent.com"
                      data-callback="handleGoogleSignIn"
                      data-auto_prompt="false">
                 </div>
@@ -49,7 +49,7 @@
     </div>
 
     <!-- En-tête -->
-    <header class="app-header" id="main-header" style="display: none;">
+    <header class="app-header" id="main-header" style="display: {% if user %}flex{% else %}none{% endif %};">
         <h1 class="app-title">Rubis Noir</h1>
         <div class="header-actions">
             <button class="icon-btn" onclick="openSearch()">🔍</button>
@@ -66,6 +66,35 @@
             </div>
         </div>
 
+        <h3 class="section-subtitle" style="margin-top: 15px;">Fil d'actualité de la communauté</h3>
+        
+        <!-- Formulaire de publication (Connecté à Flask / SQLite) -->
+        <div style="padding: 10px; background: #1e1e1e; border-radius: 8px; margin-bottom: 15px;">
+            <form action="{{ url_for('add_post') }}" method="POST">
+                <textarea name="content" placeholder="Partagez quelque chose avec la communauté..." required style="width: 100%; height: 70px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 8px; resize: none;"></textarea>
+                <button type="submit" style="background: #e50914; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.85rem;">Publier</button>
+            </form>
+        </div>
+
+        <!-- Affichage dynamique des posts stockés dans SQLite -->
+        <div id="posts-container">
+            {% for post in posts %}
+                <div style="background: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #e50914;">
+                    <small style="color: #888;">Par <strong>{{ post[2] }}</strong> ({{ post[1] }}) - {{ post[4] }}</small>
+                    <p style="margin-top: 8px; word-break: break-word; color: #fff;">{{ post[3] }}</p>
+                    
+                    <!-- Bouton Admin (visible uniquement pour kg.studio.reims@gmail.com) -->
+                    {% if is_admin %}
+                        <form action="{{ url_for('delete_post', post_id=post[0]) }}" method="POST" style="margin-top: 10px;">
+                            <button type="submit" style="background: #333; color: #ff4444; border: 1px solid #ff4444; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">[Tableau de bord Admin] Supprimer ce contenu</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p style="color: #666; font-size: 0.85rem; padding: 10px; text-align: center;">Aucune publication pour le moment.</p>
+            {% endfor %}
+        </div>
+
         <h3 class="section-subtitle" style="margin-top: 15px;">Tous les profils</h3>
         <div class="profiles-grid" id="all-profiles-container">
             <p style="color: #666; font-size: 0.85rem; padding: 10px; grid-column: 1 / -1; text-align: center;">Aucun profil inscrit pour l'instant.</p>
@@ -76,7 +105,7 @@
     <main class="app-view" id="view-user-detail" style="display: none;">
         <div class="profile-view-container" style="padding-bottom: 30px;">
             <button class="back-btn" onclick="closeUserDetail()" style="margin-bottom: 12px;">← Retour</button>
-            
+           
             <div class="my-profile-pic-container">
                 <img src="" alt="Profil" class="my-profile-pic" id="detail-main-img">
             </div>
@@ -87,7 +116,7 @@
                 <h2 id="detail-profile-title" style="margin: 0;">Nom</h2>
                 <p class="my-profile-city" id="detail-profile-city" style="margin: 4px 0;">📍 Reims</p>
                 <p class="my-profile-bio" id="detail-profile-bio" style="margin: 8px 0; color: #ccc;">Bio...</p>
-                
+               
                 <button class="search-action-btn" style="background-color: #e50914; margin-top: 15px;" onclick="startChatFromDetail()">💬 Envoyer un message</button>
             </div>
         </div>
@@ -121,18 +150,18 @@
     </main>
 
     <!-- VUE 3 : PROFIL -->
-    <main class="app-view" id="view-profile" style="display: none;">
+    <main class="app-view" id="view-profile" style="display: {% if user %}block{% else %}none{% endif %};">
         <div class="profile-view-container" style="padding-bottom: 30px;">
             <div id="photo-warning-banner" style="background-color: #e50914; color: #fff; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; margin-bottom: 12px; display: none;">
                 ⚠️ Sécurité Charte Rubis Noir : Veuillez ajouter au moins 2 photos pour débloquer l'accès complet à l'application.
             </div>
-            
+           
             <div class="my-profile-pic-container">
                 <img src="https://via.placeholder.com/300x400?text=Ma+Photo" alt="Mon Profil" class="my-profile-pic" id="my-profile-img">
             </div>
 
             <div class="my-profile-details">
-                <h2 id="my-profile-title" style="margin: 0;">Mon Profil</h2>
+                <h2 id="my-profile-title" style="margin: 0;">{{ user or 'Mon Profil' }}</h2>
                 <p class="my-profile-city" id="my-profile-display-city" style="margin: 4px 0;">📍 Reims</p>
                 <p class="my-profile-bio" id="my-profile-display-bio" style="margin: 8px 0; color: #ccc;">Membre de la communauté Rubis Noir.</p>
             </div>
@@ -210,9 +239,9 @@
             <div class="search-body">
                 <label style="font-size: 0.85rem; color: #888;">Mon Pseudo / Prénom</label>
                 <input type="text" id="edit-user-pseudo" class="search-input">
-                
+               
                 <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Photos publiques (Minimum 2, Maximum 6)</label>
-                
+               
                 <input type="file" id="gallery-file-input" accept="image/*" style="display: none;" onchange="handleRealPhotoUpload(this)">
                 <input type="file" id="camera-file-input" accept="image/*" capture="environment" style="display: none;" onchange="handleRealPhotoUpload(this)">
 
@@ -220,7 +249,7 @@
                     <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="document.getElementById('gallery-file-input').click()">📁 Ajouter (Galerie)</button>
                     <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="document.getElementById('camera-file-input').click()">📸 Prendre photo</button>
                 </div>
-                
+               
                 <div id="modal-photos-grid-edit" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;"></div>
 
                 <!-- SECTION ALBUMS PRIVÉS -->
@@ -230,17 +259,17 @@
                         <span id="album-quota-label" style="font-size: 0.75rem; color: #888;">0 / 1 album (Gratuit)</span>
                     </div>
                     <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 10px 0;">Créez un album privé (max 8 photos par album). Passez à l'abonnement pour en débloquer jusqu'à 5.</p>
-                    
+                   
                     <button class="search-action-btn" style="background-color: #242424; border: 1px solid #444; font-size: 0.85rem;" onclick="createNewPrivateAlbum()">➕ Créer un album privé</button>
                     <div id="private-albums-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;"></div>
                 </div>
 
                 <label style="font-size: 0.85rem; color: #888; margin-top: 15px;">Bio / Description</label>
                 <textarea id="edit-user-bio" class="search-input" rows="3">Membre de la communauté Rubis Noir.</textarea>
-                
+               
                 <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Ville</label>
                 <input type="text" id="edit-user-city" value="Reims" class="search-input">
-                
+               
                 <button class="search-action-btn" style="margin-top: 15px;" onclick="saveProfileChanges()">Enregistrer</button>
             </div>
         </div>
@@ -335,13 +364,14 @@
             </div>
             <div class="search-body" style="text-align: center;">
                 <p style="color: #ccc; font-size: 0.9rem;">Voulez-vous vraiment vous déconnecter ?</p>
-                <button class="search-action-btn" style="background-color: #e50914;" onclick="performLogout()">Se déconnecter</button>
+                <!-- Redirection vers la route Flask de déconnexion -->
+                <a href="{{ url_for('logout') }}" style="display: block; background-color: #e50914; color: white; padding: 10px; border-radius: 4px; text-decoration: none; margin-top: 10px; font-size: 0.9rem;">Se déconnecter</a>
             </div>
         </div>
     </div>
 
     <!-- Navigation du bas -->
-    <nav class="main-nav" id="bottom-navigation" style="display: none;">
+    <nav class="main-nav" id="bottom-navigation" style="display: {% if user %}flex{% else %}none{% endif %};">
         <button class="nav-btn active" id="btn-home" onclick="switchTab('home')">🔥 Accueil</button>
         <button class="nav-btn" id="btn-messages" onclick="switchTab('messages')">💬 Messages</button>
         <button class="nav-btn" id="btn-profile" onclick="switchTab('profile')">👤 Profil</button>
@@ -361,8 +391,8 @@
         let privateAlbums = [];
         let searchTimeout = null;
         let currentUser = {
-            pseudo: "Mon Profil",
-            email: "",
+            pseudo: "{{ user or 'Mon Profil' }}",
+            email: "{{ session.get('user_email', '') }}",
             city: "Reims",
             bio: "Membre de la communauté Rubis Noir."
         };
@@ -370,7 +400,30 @@
         let registeredProfiles = [];
         let viewingProfileEmail = null;
 
-        // Fonction de décodage du jeton JWT renvoyé par Google
+        // Callback déclenché automatiquement lors de la connexion Google réussie (transmet à Flask via formulaire)
+        function handleGoogleSignIn(response) {
+            const responsePayload = parseJwt(response.credential);
+           
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ url_for('login') }}";
+
+            const emailInput = document.createElement('input');
+            emailInput.type = 'hidden';
+            emailInput.name = 'email';
+            emailInput.value = responsePayload.email;
+            form.appendChild(emailInput);
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'hidden';
+            nameInput.name = 'name';
+            nameInput.value = responsePayload.name;
+            form.appendChild(nameInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
         function parseJwt(token) {
             var base64Url = token.split('.')[1];
             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -378,43 +431,6 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);
-        }
-
-        // Callback déclenché automatiquement lors de la connexion Google réussie
-        function handleGoogleSignIn(response) {
-            const responsePayload = parseJwt(response.credential);
-            
-            currentUser.email = responsePayload.email;
-            currentUser.pseudo = responsePayload.name || "Mon Profil";
-            userPhotos = [];
-            privateAlbums = [];
-
-            document.getElementById('my-profile-title').innerText = currentUser.pseudo;
-            document.getElementById('edit-user-pseudo').value = currentUser.pseudo;
-            document.getElementById('my-profile-img').src = responsePayload.picture || "https://via.placeholder.com/300x400?text=Ma+Photo";
-
-            document.getElementById('view-auth').style.display = 'none';
-            document.getElementById('main-header').style.display = 'flex';
-            document.getElementById('bottom-navigation').style.display = 'flex';
-            
-            updatePhotoStatusUI();
-            renderPrivateAlbumsUI();
-            switchTab('profile');
-        }
-
-        function performLogout() {
-            closeModal('modal-logout');
-            closeSettings();
-            document.getElementById('view-home').style.display = 'none';
-            document.getElementById('view-user-detail').style.display = 'none';
-            document.getElementById('view-messages').style.display = 'none';
-            document.getElementById('view-profile').style.display = 'none';
-            document.getElementById('view-chat').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            document.getElementById('bottom-navigation').style.display = 'none';
-            document.getElementById('view-auth').style.display = 'flex';
-            userPhotos = [];
-            privateAlbums = [];
         }
 
         function switchTab(tabName) {
@@ -449,7 +465,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userPhotos.push(e.target.result);
-                    
+                   
                     if (userPhotos.length === 1 && !currentUser.googlePic) {
                         document.getElementById('my-profile-img').src = e.target.result;
                     }
@@ -526,7 +542,7 @@
             const container = document.getElementById('private-albums-container');
             const quotaLabel = document.getElementById('album-quota-label');
             const maxAlbums = isSubscribed ? 5 : 1;
-            
+           
             quotaLabel.innerText = `${privateAlbums.length} / ${maxAlbums} album${maxAlbums > 1 ? 's' : ''} (${isSubscribed ? 'Abonné' : 'Gratuit'})`;
             container.innerHTML = '';
 
@@ -538,7 +554,7 @@
             privateAlbums.forEach((album, albumIndex) => {
                 const albumDiv = document.createElement('div');
                 albumDiv.style.cssText = "background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px;";
-                
+               
                 let photosHtml = '';
                 album.photos.forEach((photoSrc, photoIndex) => {
                     photosHtml += `
@@ -626,7 +642,7 @@
             registeredProfiles.forEach(profile => {
                 const displayName = profile.pseudo || "Membre";
                 const avatarImg = (profile.photos && profile.photos.length > 0) ? profile.photos[0] : "https://via.placeholder.com/150x200?text=" + encodeURIComponent(displayName);
-                
+               
                 const card = document.createElement('div');
                 card.className = 'profile-card status-online';
                 card.onclick = () => {
@@ -740,7 +756,7 @@
 
             document.getElementById('my-profile-display-city').innerText = `📍 ${currentUser.city}`;
             document.getElementById('my-profile-display-bio').innerText = currentUser.bio;
-            
+           
             closeModal('modal-edit-profile');
             registerUserToCommunity();
             alert("Profil mis à jour avec succès !");
@@ -757,7 +773,7 @@
             document.getElementById('view-messages').style.display = 'none';
             document.getElementById('view-chat').style.display = 'block';
             document.getElementById('bottom-navigation').style.display = 'none';
-            
+           
             document.getElementById('chat-messages-list').innerHTML = '<div style="text-align: center; color: #666; font-size: 0.8rem; margin: 10px 0;">Début de la conversation sécurisée</div>';
         }
 
@@ -789,11 +805,11 @@
                     const chatList = document.getElementById('chat-messages-list');
                     const bubble = document.createElement('div');
                     bubble.className = 'chat-bubble sent';
-                    
+                   
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.style.cssText = "max-width: 180px; border-radius: 8px; display: block;";
-                    
+                   
                     bubble.appendChild(img);
                     chatList.appendChild(bubble);
                     chatList.scrollTop = chatList.scrollHeight;
@@ -804,10 +820,10 @@
 
         function openSettings() { document.getElementById('modal-settings').style.display = 'flex'; }
         function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
-        function openEditProfile() { 
-            closeSettings(); 
+        function openEditProfile() {
+            closeSettings();
             renderPrivateAlbumsUI();
-            document.getElementById('modal-edit-profile').style.display = 'flex'; 
+            document.getElementById('modal-edit-profile').style.display = 'flex';
         }
         function openSubscription() {
             closeSettings();
