@@ -263,27 +263,75 @@
         </div>
     </div>
 
-    <!-- MODALE : ABONNEMENT -->
+    <!-- MODALE : ABONNEMENT MISE À JOUR -->
     <div class="settings-modal" id="modal-subscription" style="display: none;">
-        <div class="settings-content" style="max-width: 420px;">
+        <div class="settings-content" style="max-width: 480px; max-height: 90vh; overflow-y: auto;">
             <div class="settings-header">
-                <h3>Abonnement Rubis</h3>
+                <h3>Abonnement & Options Rubis</h3>
                 <button class="close-btn" onclick="closeModal('modal-subscription')">✕</button>
             </div>
-            <div class="search-body" id="sub-content-unsubscribed">
-                <p style="color: #ccc; font-size: 0.9rem; text-align: center; margin: 0;">Passez à <strong>4,99 € / mois</strong> :</p>
-                <ul style="color: #aaa; font-size: 0.85rem; padding-left: 20px; margin: 5px 0; text-align: left;">
-                    <li>Mise en avant dans les <strong>Profils du moment</strong></li>
-                    <li><strong>Mode invisible</strong></li>
-                    <li>Jusqu'à <strong>5 albums privés</strong></li>
-                </ul>
-                <div style="margin: 15px 0; text-align: center;">
-                    <div id="paypal-container-DGE9FLKP4C7Q6"></div>
+            <div class="search-body" id="sub-content-unsubscribed" style="display: flex; flex-direction: column; gap: 14px;">
+                <p style="color: #ccc; font-size: 0.85rem; text-align: center; margin: 0;">
+                    Sélectionne une option à l'unité ou débloque tout avec le Pass Complet.
+                </p>
+
+                <!-- Grille d'offres -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    
+                    <!-- Option 1: Mode Invisible -->
+                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">👁️ Mode Invisible</h4>
+                            <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Navigue discrètement sans apparaître dans les listes.</p>
+                        </div>
+                        <div style="text-align: right; min-width: 90px;">
+                            <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
+                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Mode Invisible', 1.99)">Activer</button>
+                        </div>
+                    </div>
+
+                    <!-- Option 2: Albums Privés -->
+                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">🔒 Albums Privés</h4>
+                            <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Débloque jusqu'à 5 albums photo verrouillés.</p>
+                        </div>
+                        <div style="text-align: right; min-width: 90px;">
+                            <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
+                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Albums Privés', 1.99)">Activer</button>
+                        </div>
+                    </div>
+
+                    <!-- Option 3: Mise en avant -->
+                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">✨ Mise en avant</h4>
+                            <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Apparais en priorité dans la section Profils du moment.</p>
+                        </div>
+                        <div style="text-align: right; min-width: 90px;">
+                            <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
+                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Mise en avant', 1.99)">Activer</button>
+                        </div>
+                    </div>
+
+                    <!-- Option 4: Pack Complet (Mise en avant visuelle) -->
+                    <div style="background: linear-gradient(135deg, #2b0608 0%, #1a1a1a 100%); border: 1.5px solid #e50914; border-radius: 8px; padding: 14px; text-align: center; margin-top: 5px;">
+                        <span style="background: #e50914; color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">Meilleure offre</span>
+                        <h3 style="margin: 6px 0 2px 0; color: #fff; font-size: 1.1rem;">💎 Pass Complet Rubis</h3>
+                        <p style="margin: 0 0 10px 0; color: #aaa; font-size: 0.75rem;">Inclut le Mode Invisible + Albums Privés + Mise en Avant !</p>
+                        <div style="font-size: 1.2rem; color: #fff; font-weight: bold; margin-bottom: 10px;">
+                            4,99 € <span style="font-size: 0.75rem; color: #888; font-weight: normal;">/ mois</span>
+                        </div>
+                        
+                        <div id="paypal-container-DGE9FLKP4C7Q6" style="margin-bottom: 8px;"></div>
+                        <button class="search-action-btn" style="background-color: #4285F4; width: 100%; font-weight: bold;" onclick="processGooglePlayCheckout()">S'abonner au Pass Complet (Google Play)</button>
+                    </div>
+
                 </div>
-                <button class="search-action-btn" style="background-color: #4285F4; margin-top: 5px;" onclick="processGooglePlayCheckout()">S'abonner via Google Play</button>
             </div>
+            
             <div class="search-body" id="sub-content-subscribed" style="display: none;">
-                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre abonnement est actif</p>
+                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre accès Rubis est actif</p>
                 <label class="toggle-label">
                     <span>Mode invisible (masquer mon profil)</span>
                     <input type="checkbox" id="toggle-invisible">
@@ -757,9 +805,15 @@
             document.getElementById('sub-content-subscribed').style.display = isSubscribed ? 'flex' : 'none';
             document.getElementById('modal-subscription').style.display = 'flex';
         }
+        function processOptionCheckout(optionName, price) {
+            isSubscribed = true;
+            alert(`Paiement de ${price} € validé pour l'option : ${optionName} !`);
+            openSubscription();
+            renderPrivateAlbumsUI();
+        }
         function processGooglePlayCheckout() {
             isSubscribed = true;
-            alert("Paiement de 4,99 € validé via Google Play !");
+            alert("Paiement de 4,99 € validé pour le Pass Complet via Google Play !");
             openSubscription();
             renderPrivateAlbumsUI();
         }
