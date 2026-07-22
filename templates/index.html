@@ -4,420 +4,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rubis Noir</title>
+    <!-- Script Google officiel -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root {
-            --bg-color: #0b0b0b;
-            --card-bg: #161616;
-            --accent-color: #d10000;
-            --text-color: #f1f1f1;
-            --text-muted: #888888;
-            --border-color: #2a2a2a;
-        }
-        body {
-            margin: 0; padding: 0;
-            background-color: var(--bg-color); color: var(--text-color);
-            font-family: "Helvetica Neue", Arial, sans-serif;
-        }
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-        }
-        h1, h2, h3 { margin: 0; }
-        .container {
-            max-width: 900px; margin: 0 auto; padding: 1.5rem; padding-bottom: 6rem;
-        }
-        .view-section { display: none; }
-        .view-section.active { display: block; }
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; }
         
-        /* Affichage en 4 colonnes strictes */
-        .profiles-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .profile-card {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 0.5rem; overflow: hidden; cursor: pointer;
-            transition: border-color 0.2s; position: relative;
-        }
-        .profile-card:hover { border-color: var(--accent-color); }
-        .profile-card img { width: 100%; height: 150px; object-fit: cover; }
-        .profile-info { padding: 0.5rem; text-align: center; }
+        /* PAGE DE CONNEXION */
+        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0d0d0d; }
+        #login-screen h1 { color: #e60000; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
         
-        nav.bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--card-bg); border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-around; padding: 0.75rem 0; z-index: 100;
-        }
-        .nav-item {
-            color: var(--text-muted); cursor: pointer; font-size: 0.85rem;
-            text-align: center; background: none; border: none;
-            display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
-        }
-        .nav-item.active { color: var(--accent-color); font-weight: bold; }
-
-        button {
-            background-color: var(--accent-color); color: #fff; border: none;
-            padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer; font-weight: bold;
-        }
-        button:hover { opacity: 0.9; }
-        button.danger { background-color: #880000; }
+        /* APPLICATION PRINCIPALE */
+        #main-app { display: none; padding: 20px; }
         
-        input, textarea {
-            width: 100%; background: var(--card-bg); border: 1px solid var(--border-color);
-            color: var(--text-color); padding: 0.75rem; border-radius: 0.25rem;
-            margin-bottom: 1rem; box-sizing: border-box;
-        }
-        .sub-card {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;
-        }
-        .media-preview img, .media-preview video { max-width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; }
+        header { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid #333; align-items: center; }
+        .nav-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { background-color: #e60000; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; position: relative; }
+        button:hover { background-color: #ff1a1a; }
+        
+        /* Pastilles de notifications (Vues/Messages) */
+        .badge { position: absolute; top: -8px; right: -8px; background: white; color: #e60000; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 50%; display: none; }
+        
+        .section { display: none; margin-top: 20px; }
+        .active-section { display: block; }
+        
+        /* Design des messages avec bouton signaler */
+        .msg-container { border: 1px solid #444; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background-color: #262626; border-radius: 5px; }
+        .report-btn-msg { background-color: #ff4444; font-size: 12px; padding: 5px 10px; }
+        
+        /* Modale Paramètres */
+        #settings-modal { display: none; position: fixed; top: 5%; left: 50%; transform: translate(-50%, 0); background: #262626; padding: 20px; border: 1px solid #444; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; z-index: 1000; }
+        .paypal-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; background-color: #ffc439; color: #003087; font-weight: bold; text-align: center; border-radius: 5px; cursor: pointer; text-decoration: none; border: none; }
+        .settings-block { border: 1px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .settings-block button { width: 100%; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2>Rubis Noir</h2>
-        <div id="auth-container">
-            <div id="g_id_onload"
-                 data-client-id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-                 data-callback="handleCredentialResponse"
-                 data-auto_prompt="false">
-            </div>
-            <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
+    <!-- 1. ÉCRAN DE VERROUILLAGE / CONNEXION -->
+    <div id="login-screen">
+        <h1>Rubis Noir</h1>
+        <p>Veuillez vous connecter pour accéder à l'application.</p>
+        <div id="g_id_onload"
+             data-client_id="TON_CLIENT_ID_GOOGLE_ICI.apps.googleusercontent.com"
+             data-context="signin"
+             data-ux_mode="popup"
+             data-callback="handleGoogleLogin">
         </div>
-    </header>
-
-    <div class="container">
-
-        <!-- ACCUEIL (Profils en 4 colonnes, exit la média récente) -->
-        <section id="view-home" class="view-section active">
-            <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">⭐ Membres mis en avant</h3>
-            <div id="boosted-grid" class="profiles-grid"></div>
-
-            <h3 style="margin-top: 2rem; margin-bottom: 0.5rem;">Tous les membres</h3>
-            <div id="profiles-grid" class="profiles-grid"></div>
-        </section>
-
-        <!-- MESSAGES -->
-        <section id="view-messages" class="view-section">
-            <h2>Discussions</h2>
-            <div id="conversations-list" style="margin-top: 1rem;">
-                <p style="color: var(--text-muted);">Aucune discussion en cours.</p>
-            </div>
-        </section>
-
-        <!-- DÉTAIL CHAT -->
-        <section id="view-chat-detail" class="view-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <span style="cursor: pointer; color: var(--accent-color); font-weight: bold;" onclick="switchView('view-messages')">← Retour</span>
-                <button class="danger" onclick="deleteConversation()">Supprimer la conversation</button>
-            </div>
-            <h3 id="chat-with-title">Discussion</h3>
-            <div id="chat-messages" style="height: 400px; overflow-y: auto; background: var(--card-bg); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;"></div>
-            
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <input type="file" id="chat-file" accept="image/*,video/*" style="width: auto; margin-bottom: 0;">
-                <input type="text" id="chat-input" placeholder="Ton message..." style="margin-bottom: 0; flex-grow: 1;">
-                <button onclick="sendMessage()">Envoyer</button>
-            </div>
-        </section>
-
-        <!-- PROFIL (5 photos max + Albums privés) -->
-        <section id="view-profile" class="view-section">
-            <h2>Mon Profil</h2>
-            <div style="margin-top: 1.5rem;">
-                <label>Pseudo :</label>
-                <input type="text" id="profile-pseudo">
-                
-                <label>Bio :</label>
-                <textarea id="profile-bio" rows="3"></textarea>
-                
-                <h3>Mes Photos (5 maximum)</h3>
-                <input type="text" id="photo-1" placeholder="URL Photo 1 (Principale)">
-                <input type="text" id="photo-2" placeholder="URL Photo 2">
-                <input type="text" id="photo-3" placeholder="URL Photo 3">
-                <input type="text" id="photo-4" placeholder="URL Photo 4">
-                <input type="text" id="photo-5" placeholder="URL Photo 5">
-
-                <h3>Mes Albums Privés</h3>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Réservé aux membres ayant débloqué l'accès.</p>
-                <input type="text" id="profile-albums" placeholder="URL de ton album privé...">
-
-                <button onclick="saveProfile()" style="margin-top: 1rem;">Enregistrer le profil</button>
-            </div>
-        </section>
-
-        <!-- ABONNEMENTS (Les 4 options restaurées) -->
-        <section id="view-subs" class="view-section">
-            <h2>Abonnements</h2>
-            
-            <div class="sub-card">
-                <h3>🛡️ Mode Discret</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Navigue en invisible.</p>
-                <button onclick="subscribe('invisible')" style="background:#FFD140; color:#000;">S'abonner</button>
-            </div>
-
-            <div class="sub-card">
-                <h3>⭐ Mise en Avant</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Apparaît en haut de l'accueil.</p>
-                <button onclick="subscribe('boost')" style="background:#FFD140; color:#000;">S'abonner</button>
-            </div>
-
-            <div class="sub-card">
-                <h3>📸 Albums Privés</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Débloque le partage d'albums intimes.</p>
-                <button onclick="subscribe('albums')" style="background:#FFD140; color:#000;">S'abonner</button>
-            </div>
-
-            <div class="sub-card" style="border-color: var(--accent-color);">
-                <h3 style="color: var(--accent-color);">👑 Pass Complet</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Toutes les options débloquées.</p>
-                <button onclick="subscribe('pack')" style="background:#FFD140; color:#000; padding: 0.75rem 2rem;">Obtenir le Pass</button>
-            </div>
-        </section>
-
-        <!-- MODÉRATION (Accès complet y compris fichiers) -->
-        <section id="view-developer" class="view-section">
-            <h2>Administration & Modération</h2>
-            
-            <h3 style="margin-top: 1.5rem;">Inscriptions</h3>
-            <div id="admin-pending-list"></div>
-
-            <h3 style="margin-top: 2rem;">Supervision Globale (Messages & Fichiers)</h3>
-            <div id="admin-messages-list" style="max-height: 400px; overflow-y: auto; background: var(--card-bg); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-color);"></div>
-        </section>
-
+        <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
     </div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchView('view-home')">🏠 Accueil</button>
-        <button class="nav-item" onclick="switchView('view-messages')">💬 Messages</button>
-        <button class="nav-item" onclick="switchView('view-profile')">👤 Profil</button>
-        <button class="nav-item" onclick="switchView('view-subs')">👑 Pass</button>
-        <button id="nav-admin-btn" class="nav-item" onclick="switchView('view-developer')" style="display:none;">🛡️ Admin</button>
-    </nav>
+    <!-- 2. APPLICATION PRINCIPALE -->
+    <div id="main-app">
+        <header>
+            <div class="nav-group">
+                <button onclick="showSection('accueil')">Accueil</button>
+                <!-- Onglets avec emplacements pour futures notifications -->
+                <button onclick="showSection('vues')">Vues <span class="badge" id="badge-vues">0</span></button>
+                <button onclick="showSection('messages')">Messages <span class="badge" id="badge-messages">0</span></button>
+                <button onclick="showSection('profil')">Mon Profil</button>
+                <!-- Bouclier Modération -->
+                <button id="btn-admin" style="display: none;" onclick="showSection('dashboard')">🛡️ Modération</button>
+            </div>
+            <button onclick="toggleSettings()">⚙️ Paramètres</button>
+        </header>
+
+        <div id="accueil" class="section active-section">
+            <h2>Bienvenue sur Rubis Noir</h2>
+            <p>Le flux d'actualité et le contenu principal viennent ici...</p>
+        </div>
+
+        <div id="vues" class="section">
+            <h2>Vos Vues</h2>
+            <p>Ici s'afficheront les profils des membres qui ont visité votre page.</p>
+        </div>
+
+        <div id="messages" class="section">
+            <h2>Vos Conversations</h2>
+            <!-- Exemple de structure d'une conversation avec le bouton signaler -->
+            <div class="msg-container">
+                <div><strong>Membre_01</strong> : Bonjour, comment vas-tu ?</div>
+                <button class="report-btn-msg" onclick="alert('Signalement envoyé à la modération.')">🚨 Signaler</button>
+            </div>
+        </div>
+
+        <div id="profil" class="section">
+            <h2>Mon Profil</h2>
+            <p>Ajoutez vos photos :</p>
+            <input type="file" accept="image/*" id="photo-upload-1">
+            <input type="file" accept="image/*" id="photo-upload-2">
+            <br><br>
+            <textarea placeholder="Votre biographie..." style="width: 100%; height: 80px;"></textarea>
+            <br><br>
+            <button>Sauvegarder le profil</button>
+        </div>
+
+        <div id="dashboard" class="section">
+            <h2 style="color: #e60000;">🛡️ Interface Développeur</h2>
+            <p>Gestion de la communauté, traitement des signalements et administration de Rubis Noir.</p>
+        </div>
+    </div>
+
+    <!-- 3. MODALE DES PARAMÈTRES -->
+    <div id="settings-modal">
+        <h2>Paramètres</h2>
+        
+        <div class="settings-block">
+            <h3>Vos Abonnements</h3>
+            <!-- Restauration des 4 boutons PayPal -->
+            <button class="paypal-btn">Abonnement 1 - PayPal</button>
+            <button class="paypal-btn">Abonnement 2 - PayPal</button>
+            <button class="paypal-btn">Abonnement 3 - PayPal</button>
+            <button class="paypal-btn">Abonnement 4 - PayPal</button>
+        </div>
+
+        <div class="settings-block">
+            <h3>Sécurité & Informations</h3>
+            <button style="background-color: #333;">Charte Rubis Noir & Règlement</button>
+            <button style="background-color: #ff4444;">🚨 Signalement général (Problème/Bug)</button>
+        </div>
+
+        <button style="width: 100%; background-color: #555; margin-bottom: 10px;">Déconnexion</button>
+        <button onclick="toggleSettings()" style="width: 100%; background-color: #262626; border: 1px solid #666;">Fermer</button>
+    </div>
 
     <script>
-        let currentUser = null;
-        let activeChatUser = null;
-
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+        // Gestion de la connexion Google
+        function handleGoogleLogin(response) {
+            const token = response.credential;
             
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event && event.currentTarget && event.currentTarget.classList.add('active');
-            
-            if(viewId === 'view-home') loadProfiles();
-            if(viewId === 'view-profile' && currentUser) loadProfileData();
-            if(viewId === 'view-messages') loadConversations();
-            if(viewId === 'view-developer') loadAdminData();
-        }
-
-        async function handleCredentialResponse(response) {
-            let res = await fetch('/api/auth/google', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({token: response.credential})
-            });
-            let data = await res.json();
-            if(data.success) {
-                currentUser = data.user;
-                updateAuthUI();
-                loadProfiles();
-            }
-        }
-
-        function updateAuthUI() {
-            if(!currentUser) return;
-            document.getElementById('auth-container').innerHTML = `<span style="font-size: 0.9rem;">Connecté : ${currentUser.pseudo || currentUser.email}</span>`;
-            if(currentUser.is_admin) document.getElementById('nav-admin-btn').style.display = 'flex';
-        }
-
-        // Chargement des profils en 4 colonnes
-        async function loadProfiles() {
-            let res = await fetch('/api/users/active');
-            let data = await res.json();
-            if(!data.success) return;
-
-            let grid = document.getElementById('profiles-grid');
-            let boostedGrid = document.getElementById('boosted-grid');
-            grid.innerHTML = ''; boostedGrid.innerHTML = '';
-
-            data.users.forEach(u => {
-                let photo = (u.photos && u.photos.length > 0 && u.photos[0]) ? u.photos[0] : 'https://via.placeholder.com/150';
-                let cardHTML = `
-                    <div class="profile-card" onclick="promptMessage('${u.email}')">
-                        <img src="${photo}" alt="avatar">
-                        <div class="profile-info">
-                            <strong style="font-size: 0.85rem;">${u.pseudo || 'Membre'}</strong>
-                        </div>
-                    </div>
-                `;
-                if(u.sub_boost || u.sub_pack) boostedGrid.innerHTML += cardHTML;
-                else grid.innerHTML += cardHTML;
-            });
-        }
-
-        // Proposition de message au clic
-        function promptMessage(email) {
-            if(confirm(`Souhaites-tu démarrer une discussion avec ${email} ?`)) {
-                activeChatUser = email;
-                document.getElementById('chat-with-title').innerText = `Discussion avec ${email}`;
-                switchView('view-chat-detail');
-                fetchMessages();
-            }
-        }
-
-        async function loadConversations() {
-            // Dans cette version simplifiée, on liste les utilisateurs pour discuter
-            let res = await fetch('/api/users/active');
-            let data = await res.json();
-            let list = document.getElementById('conversations-list');
-            list.innerHTML = '';
-            data.users.forEach(u => {
-                if(u.email !== currentUser.email) {
-                    list.innerHTML += `
-                        <div onclick="promptMessage('${u.email}')" style="padding: 1rem; background: var(--card-bg); margin-bottom: 0.5rem; border-radius: 0.5rem; cursor: pointer;">
-                            Discussion avec <strong>${u.pseudo || u.email}</strong>
-                        </div>
-                    `;
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    // Cache l'écran de verrouillage, affiche l'application
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    
+                    // Débloque le bouclier modération pour toi
+                    if(data.user.email === "kg.studio.reims@gmail.com" || data.user.is_admin) {
+                        document.getElementById('btn-admin').style.display = 'inline-block';
+                    }
+                } else {
+                    alert("Erreur de connexion au serveur.");
                 }
+            })
+            .catch(err => {
+                console.error("Erreur:", err);
             });
         }
 
-        function loadProfileData() {
-            document.getElementById('profile-pseudo').value = currentUser.pseudo || '';
-            document.getElementById('profile-bio').value = currentUser.bio || '';
-            for(let i=0; i<5; i++) {
-                document.getElementById(`photo-${i+1}`).value = (currentUser.photos && currentUser.photos[i]) ? currentUser.photos[i] : '';
-            }
-            document.getElementById('profile-albums').value = currentUser.albums || '';
+        // Navigation entre les onglets
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
+            document.getElementById(sectionId).classList.add('active-section');
         }
 
-        async function saveProfile() {
-            let photos = [];
-            for(let i=1; i<=5; i++) {
-                let val = document.getElementById(`photo-${i}`).value;
-                if(val) photos.push(val);
-            }
-            let payload = {
-                pseudo: document.getElementById('profile-pseudo').value,
-                bio: document.getElementById('profile-bio').value,
-                photos: photos,
-                albums: document.getElementById('profile-albums').value
-            };
-            let res = await fetch('/api/profile/update', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            let data = await res.json();
-            if(data.success) { alert("Profil mis à jour !"); Object.assign(currentUser, payload); }
-        }
-
-        async function fetchMessages() {
-            let res = await fetch(`/api/chat/messages?user=${activeChatUser}`);
-            let data = await res.json();
-            let chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = '';
-            data.messages.forEach(m => {
-                let isMe = m.sender === currentUser.email;
-                let mediaHtml = m.file_data ? (m.file_type.includes('video') ? `<video controls src="${m.file_data}"></video>` : `<img src="${m.file_data}">`) : '';
-                chatBox.innerHTML += `
-                    <div style="margin-bottom: 1rem; text-align: ${isMe ? 'right' : 'left'};">
-                        <div style="background: ${isMe ? 'var(--accent-color)' : 'var(--border-color)'}; padding: 0.75rem; border-radius: 0.5rem; display: inline-block; max-width: 80%; text-align: left;">
-                            ${m.content}
-                            <div class="media-preview">${mediaHtml}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        async function sendMessage() {
-            let content = document.getElementById('chat-input').value;
-            let fileInput = document.getElementById('chat-file');
-            let fileData = null;
-            let fileType = null;
-
-            if(fileInput.files.length > 0) {
-                let file = fileInput.files[0];
-                fileType = file.type;
-                fileData = await new Promise((resolve) => {
-                    let reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            if(!content && !fileData) return;
-
-            await fetch('/api/chat/send', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({receiver: activeChatUser, content, file_data: fileData, file_type: fileType})
-            });
-            document.getElementById('chat-input').value = '';
-            fileInput.value = '';
-            fetchMessages();
-        }
-
-        async function deleteConversation() {
-            if(confirm("Veux-tu vraiment supprimer toute cette conversation ?")) {
-                await fetch('/api/chat/delete', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({other_user: activeChatUser})
-                });
-                switchView('view-messages');
+        // Ouverture/Fermeture des paramètres
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'block';
+            } else {
+                modal.style.display = 'none';
             }
         }
 
-        async function subscribe(plan) {
-            // Simulation API de paiement
-            await fetch('/api/paypal-success', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({plan: plan})
-            });
-            alert("Abonnement activé !");
-        }
-
-        async function loadAdminData() {
-            let res = await fetch('/api/admin/data');
-            let data = await res.json();
+        // Fonction prête pour le backend : mettre à jour les notifications Vues/Messages
+        function updateNotifications(unreadViews, unreadMessages) {
+            const badgeVues = document.getElementById('badge-vues');
+            const badgeMessages = document.getElementById('badge-messages');
             
-            let list = document.getElementById('admin-pending-list');
-            list.innerHTML = '';
-            data.pending.forEach(p => {
-                list.innerHTML += `<div style="padding: 1rem; background: var(--card-bg); margin-bottom: 0.5rem;"><button onclick="approveUser('${p.email}')">Valider ${p.email}</button></div>`;
-            });
+            if (unreadViews > 0) {
+                badgeVues.style.display = 'inline-block';
+                badgeVues.innerText = unreadViews;
+            } else {
+                badgeVues.style.display = 'none';
+            }
 
-            let msgList = document.getElementById('admin-messages-list');
-            msgList.innerHTML = '';
-            data.messages.forEach(m => {
-                let mediaHtml = m.file_data ? (m.file_type.includes('video') ? `<br><video controls src="${m.file_data}" style="max-width:100px;"></video>` : `<br><img src="${m.file_data}" style="max-width:100px;">`) : '';
-                msgList.innerHTML += `<div style="border-bottom: 1px solid var(--border-color); padding: 0.5rem 0;">
-                    <strong>${m.sender_email}</strong> à <strong>${m.receiver_email}</strong>: ${m.content} ${mediaHtml}
-                </div>`;
-            });
+            if (unreadMessages > 0) {
+                badgeMessages.style.display = 'inline-block';
+                badgeMessages.innerText = unreadMessages;
+            } else {
+                badgeMessages.style.display = 'none';
+            }
         }
-
-        async function approveUser(email) {
-            await fetch('/api/admin/approve', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email})
-            });
-            loadAdminData();
-        }
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            let res = await fetch('/api/auth/session');
-            let data = await res.json();
-            if(data.success) { currentUser = data.user; updateAuthUI(); loadProfiles(); }
-        });
     </script>
 </body>
 </html>
