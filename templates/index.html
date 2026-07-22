@@ -9,9 +9,6 @@
     <title>Rubis Noir</title>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- PayPal SDK Production (Remplacer client-id par votre vraie clé live si production réelle) -->
-    <script src="https://www.paypal.com/sdk/js?client-id=BAA13fAj2dSXBKbAVlFx039PnEUQ6NBk8qbZTcT_YIy5LtBjWJVB2Kd_BU7eoOiNMf0JT6AXEYeeAlUya8&components=hosted-buttons&disable-funding=venmo&currency=EUR">  
-    </script>
     <style>
         :root {
             --bg-color: #121212;
@@ -69,7 +66,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 90px; /* Espace optimisé pour la navigation fixe sur mobile */
+            padding-bottom: 90px;
         }
 
         .view-section {
@@ -85,7 +82,6 @@
             font-size: 1.4rem;
         }
 
-        /* Grille des tarifs / Abonnements - Optimisée mobile */
         .pricing-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -108,6 +104,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            align-items: center;
         }
 
         .pricing-card.featured {
@@ -126,34 +123,6 @@
             margin-bottom: 12px;
         }
 
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(255,255,255,0.05);
-        }
-
-        /* Bouton Signalement Réactivé */
         .btn-report {
             background-color: #333;
             color: #ff4d4d;
@@ -165,7 +134,6 @@
             background-color: rgba(255, 77, 77, 0.1);
         }
 
-        /* Navigation Mobile Inférieure */
         nav.bottom-nav {
             position: fixed;
             bottom: 0;
@@ -202,7 +170,6 @@
             fill: currentColor;
         }
 
-        /* Formulaires & Alertes Charte */
         .alert-box {
             background-color: rgba(229, 9, 20, 0.1);
             border: 1px solid var(--primary-color);
@@ -242,7 +209,6 @@
             flex-shrink: 0;
         }
 
-        /* Modal Signalement */
         #report-modal {
             display: none;
             position: fixed;
@@ -286,45 +252,73 @@
         <section id="view-home" class="view-section active">
             <h2>Pass & Abonnements</h2>
             <div class="alert-box">
-                Rappel Charte Rubis Noir : Minimum 2 photos obligatoires sur votre profil pour débloquer l'intégralité des interactions et des messages.
+                Rappel Charte Rubis Noir : Minimum 2 photos obligatoires sur votre profil pour débloquer l'intégralité des interactions.
             </div>
 
             <div class="pricing-grid">
-                <!-- Option 1 à 1,99 € -->
+                <!-- Option 1 : Mode Invisible -->
                 <div class="pricing-card">
                     <h3>Mode Invisible</h3>
                     <div class="price">1,99 €</div>
                     <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Visitez incognito.</p>
-                    <button class="btn" onclick="initRealCheckout('Mode Invisible', 1.99)">Choisir</button>
+                    <div>
+                      <style>.pp-AVG6QNCSPHHL6{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/AVG6QNCSPHHL6" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-AVG6QNCSPHHL6" type="submit" value="Acheter" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                      </form>
+                    </div>
                 </div>
 
-                <!-- Option 2 à 1,99 € -->
+                <!-- Option 2 : Albums Privés -->
                 <div class="pricing-card">
-                    <h3>Albums Privés</h3>
+                    <h3>Albums Privés (max 5)</h3>
                     <div class="price">1,99 €</div>
                     <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès aux contenus exclusifs.</p>
-                    <button class="btn" onclick="initRealCheckout('Albums Privés', 1.99)">Choisir</button>
+                    <div>
+                      <style>.pp-G5DWN82PSLVVY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/G5DWN82PSLVVY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-G5DWN82PSLVVY" type="submit" value="Acheter" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                      </form>
+                    </div>
                 </div>
 
-                <!-- Option 3 à 1,99 € -->
+                <!-- Option 3 : Mise en avant -->
                 <div class="pricing-card">
-                    <h3>Messages Illimités</h3>
+                    <h3>Mise en avant</h3>
                     <div class="price">1,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Discutez sans restriction.</p>
-                    <button class="btn" onclick="initRealCheckout('Messages Illimités', 1.99)">Choisir</button>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Votre profil apparaît en haut.</p>
+                    <div>
+                      <style>.pp-MISEENAVANT{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-MISEENAVANT" type="submit" value="Acheter" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                      </form>
+                    </div>
                 </div>
 
-                <!-- Option Globale à 4,99 € -->
+                <!-- Option 4 : Pass Rubis Complet -->
                 <div class="pricing-card featured">
                     <h3>Pass Rubis Complet</h3>
                     <div class="price">4,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès total à toutes les fonctionnalités premium.</p>
-                    <button class="btn" onclick="initRealCheckout('Pass Rubis Complet', 4.99)">Profiter du Pass</button>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès total à tout.</p>
+                    <div>
+                      <style>.pp-DGE9FLKP4C7Q6{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/DGE9FLKP4C7Q6" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                        <input class="pp-DGE9FLKP4C7Q6" type="submit" value="Acheter" />
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                      </form>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- VUE VISITEURS / VUES -->
+        <!-- VUE VISITEURS -->
         <section id="view-visitors" class="view-section">
             <h2>Visiteurs récents</h2>
             <div class="profile-card">
@@ -355,11 +349,11 @@
             </div>
         </section>
 
-        <!-- VUE PROFIL & SESSION -->
+        <!-- VUE PROFIL & CONNEXION GOOGLE -->
         <section id="view-profile" class="view-section">
             <h2>Mon Compte & Connexion</h2>
             <div style="margin-bottom: 20px;">
-                <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">Connectez-vous avec votre compte Google pour synchroniser votre profil en conditions réelles.</p>
+                <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">Connectez-vous avec votre compte Google en conditions réelles.</p>
                 <div id="g_id_onload"
                      data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
                      data-callback="handleCredentialResponse">
@@ -369,20 +363,20 @@
         </section>
     </main>
 
-    <!-- MODAL DE SIGNALEMENT RÉACTIVÉ -->
+    <!-- MODAL DE SIGNALEMENT -->
     <div id="report-modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 8px; color: var(--primary-color);">Signalement</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary);" id="report-target-text">Précisez le motif du signalement pour ce profil :</p>
-            <textarea id="report-reason" placeholder="Décrivez le problème (non-respect de la charte, spam...)"></textarea>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);" id="report-target-text">Précisez le motif :</p>
+            <textarea id="report-reason" placeholder="Décrivez le problème..."></textarea>
             <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary" onclick="closeReportModal()">Annuler</button>
-                <button class="btn" onclick="submitReport()">Envoyer</button>
+                <button class="btn btn-secondary" onclick="closeReportModal()" style="background:none; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; cursor:pointer;">Annuler</button>
+                <button class="btn" onclick="submitReport()" style="background:var(--primary-color); border:none; color:#fff; padding:8px; border-radius:4px; cursor:pointer; flex:1;">Envoyer</button>
             </div>
         </div>
     </div>
 
-    <!-- NAVIGATION INFÉRIEURE MOBILE -->
+    <!-- NAVIGATION INFÉRIEURE -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchView('home', this)">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -396,41 +390,25 @@
             <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
             Messages
         </button>
-        <button class="nav-item" onclick="versionSwitch('profile', this)">
+        <button class="nav-item" onclick="switchView('profile', this)">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             Profil
         </button>
     </nav>
 
     <script>
-        // Gestion de la navigation par onglets
         function switchView(viewName, element) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById('view-' + viewName).classList.add('active');
-
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             if(element) element.classList.add('active');
         }
-        
-        // Alias pour l'onglet profil
-        function versionSwitch(viewName, element) {
-            switchView(viewName, element);
-        }
 
-        // Intégration réelle PayPal pour les abonnements (1,99€ et 4,99€)
-        function initRealCheckout(itemName, price) {
-            // En production réelle, relier à l'API de commande PayPal active
-            console.log(`Redirection vers le paiement réel PayPal pour : ${itemName} au tarif de ${price} €`);
-            alert(`Redirection vers la passerelle de paiement sécurisée PayPal pour l'offre : ${itemName} (${price} €).`);
-        }
-
-        // Gestion de la connexion Google authentique
         function handleCredentialResponse(response) {
             document.getElementById('session-status').innerText = "Connecté";
             console.log("Authentification Google réussie :", response.credential);
         }
 
-        // Logique du bouton de signalement réactivé
         let currentReportTarget = "";
         function openReportModal(targetName) {
             currentReportTarget = targetName;
@@ -446,11 +424,9 @@
         function submitReport() {
             const reason = document.getElementById('report-reason').value;
             if(!reason.trim()) {
-                alert("Veuillez indiquer un motif pour le signalement.");
+                alert("Veuillez indiquer un motif.");
                 return;
             }
-            // Envoi effectif de la requête de signalement au serveur
-            console.log(`Signalement envoyé pour [${currentReportTarget}] - Motif : ${reason}`);
             alert("Votre signalement a bien été transmis à la modération.");
             closeReportModal();
         }
