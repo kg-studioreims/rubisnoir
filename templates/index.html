@@ -875,7 +875,6 @@
                 const bioInput = document.getElementById('my-bio-input');
                 document.getElementById('my-profile-avatar-placeholder').innerText = currentUserEmail.substring(0, 2).toUpperCase();
 
-                // Enregistrer la connexion en temps réel dans Firebase
                 db.ref('connections/' + safeEmailKey).set({
                     email: currentUserEmail,
                     lastActive: Date.now()
@@ -903,19 +902,9 @@
                             switchView('home', document.querySelector('.nav-item'));
                             initPublicDataListeners();
                         } else {
-                isProfileApproved = false;
-                // Si l'utilisateur n'existe pas encore dans la base, on crée sa fiche automatiquement
-                if (!userData) {
-                    db.ref('users/' + safeEmailKey).set({
-                        email: currentUserEmail,
-                        approved: false,
-                        createdAt: Date.now()
-                    });
-                }
-                document.getElementById('main-header').style.display = 'none';
-                document.getElementById('main-bottom-nav').style.display = 'none';
-                switchView('pending', null);
-            }
+                            isProfileApproved = false;
+                            switchView('pending', null);
+                        }
                     });
                 }
             } catch (e) {
@@ -1010,9 +999,7 @@
             });
         }
 
-        // ECOUTEURS DONNÉES PUBLIQUES & STATISTIQUES ACCUEIL
         function initPublicDataListeners() {
-            // Utilisateurs validés (Membres)
             db.ref('users').on('value', (snapshot) => {
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('home-profiles-grid');
@@ -1036,7 +1023,6 @@
                 document.getElementById('stat-members').innerText = count;
             });
 
-            // Médias récents partagés
             db.ref('media_shares').on('value', (snapshot) => {
                 const medias = snapshot.val() || {};
                 const grid = document.getElementById('home-media-grid');
@@ -1059,7 +1045,6 @@
                 document.getElementById('stat-media').innerText = count;
             });
 
-            // Visites en temps réel
             db.ref('visits').on('value', (snapshot) => {
                 const visits = snapshot.val() || {};
                 const count = Object.keys(visits).length;
@@ -1082,7 +1067,6 @@
             });
         }
 
-        // ÉCOUTEURS TEMPS RÉEL POUR L'ADMINISTRATEUR
         function initAdminListeners() {
             db.ref('moderation').on('child_added', (snapshot) => {
                 const data = snapshot.val();
@@ -1303,7 +1287,6 @@
             document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
             document.getElementById('profile-detail-view').style.display = 'block';
 
-            // Enregistrer une visite en temps réel
             if (currentUserEmail && currentUserEmail !== name) {
                 db.ref('visits').push({
                     visitor: currentUserEmail,
