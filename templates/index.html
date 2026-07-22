@@ -701,7 +701,7 @@
         <section id="view-settings" class="view-section">
             <h2>Paramètres & Compte</h2>
             <div style="margin-bottom: 20px;" id="auth-container">
-                <p style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">Connexion Google sécurisée (Développeur & Membres) :</p>
+                <p style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">Connexion Google sécurisée :</p>
                 <div id="g_id_onload"
                      data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
                      data-callback="handleCredentialResponse">
@@ -989,12 +989,13 @@
                 const userEmail = data.email;
                 const bioInput = document.getElementById('my-bio-input');
 
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('logged-user-email').innerText = `● Connecté (${userEmail})`;
+                document.getElementById('user-session-box').style.display = 'block';
+
                 if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     isDeveloper = true;
                     bioInput.value = "Créateur de l'application Rubis Noir.";
-                    document.getElementById('auth-container').style.display = 'none';
-                    document.getElementById('logged-user-email').innerText = `● Connecté (Admin/Dev : ${userEmail})`;
-                    document.getElementById('user-session-box').style.display = 'block';
                     
                     const nav = document.getElementById('main-bottom-nav');
                     if (!document.getElementById('nav-shield-btn')) {
@@ -1012,9 +1013,6 @@
                 } else {
                     isDeveloper = false;
                     bioInput.value = "";
-                    document.getElementById('auth-container').style.display = 'none';
-                    document.getElementById('logged-user-email').innerText = `● Connecté (${userEmail})`;
-                    document.getElementById('user-session-box').style.display = 'block';
                     
                     const shieldBtn = document.getElementById('nav-shield-btn');
                     if (shieldBtn) shieldBtn.remove();
