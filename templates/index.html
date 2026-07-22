@@ -91,7 +91,7 @@
             <button class="back-btn" onclick="closeUserDetail()" style="margin-bottom: 12px;">← Retour</button>
            
             <div class="my-profile-pic-container">
-                <img src="" alt="Profil" class="my-profile-pic" id="detail-main-img">
+                <img src="" alt="Profil" class="my-profile-pic" id="detail-main-img" style="cursor: pointer;" onclick="openFullscreen(this.src)">
             </div>
 
             <div style="display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;" id="detail-photos-gallery"></div>
@@ -141,7 +141,7 @@
             </div>
            
             <div class="my-profile-pic-container">
-                <img src="https://via.placeholder.com/300x400?text=Ma+Photo" alt="Mon Profil" class="my-profile-pic" id="my-profile-img">
+                <img src="https://via.placeholder.com/300x400?text=Ma+Photo" alt="Mon Profil" class="my-profile-pic" id="my-profile-img" style="cursor: pointer;" onclick="openFullscreen(this.src)">
             </div>
 
             <div class="my-profile-details">
@@ -416,6 +416,12 @@
         </div>
     </div>
 
+    <!-- VISIONNEUSE PHOTO PLEIN ÉCRAN -->
+    <div id="modal-fullscreen-photo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
+        <button onclick="closeFullscreen()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
+        <img id="fullscreen-img-element" src="" style="max-width: 90%; max-height: 85vh; object-fit: contain; border-radius: 8px;">
+    </div>
+
     <!-- Navigation du bas à 4 boutons avec badges de notification -->
     <nav class="main-nav" id="bottom-navigation" style="display: {% if user %}flex{% else %}none{% endif %};">
         <button class="nav-btn active" id="btn-home" onclick="switchTab('home')">🔥 Accueil</button>
@@ -461,7 +467,7 @@
         };
 
         let registeredProfiles = [];
-        let profileVisitors = []; // Stocke les visites sur 24h { visitorEmail, visitorPseudo, visitorPhoto, timestamp }
+        let profileVisitors = [];
         let unreadMessagesCount = 0;
         let unreadVisitorsCount = 0;
         let viewingProfileEmail = null;
@@ -555,9 +561,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userPhotos.push(e.target.result);
-                    if (userPhotos.length === 1) {
-                        document.getElementById('my-profile-img').src = e.target.result;
-                    }
+                    document.getElementById('my-profile-img').src = userPhotos[0];
                     updatePhotoStatusUI();
                     renderMyPhotosGrids();
                     registerUserToCommunity();
@@ -572,8 +576,17 @@
                 return;
             }
             userPhotos.splice(index, 1);
-            document.getElementById('my-profile-img').src = userPhotos.length > 0 ? userPhotos[0] : "https://via.placeholder.com/300x400?text=Ma+Photo";
+            document.getElementById('my-profile-img').src = userPhotos[0];
             updatePhotoStatusUI();
+            renderMyPhotosGrids();
+            registerUserToCommunity();
+        }
+
+        function setPrimaryPhoto(index) {
+            if (index === 0) return; // Déjà principale
+            const selectedPhoto = userPhotos.splice(index, 1)[0];
+            userPhotos.unshift(selectedPhoto); // Met en première position
+            document.getElementById('my-profile-img').src = userPhotos[0];
             renderMyPhotosGrids();
             registerUserToCommunity();
         }
@@ -587,17 +600,28 @@
             userPhotos.forEach((src, index) => {
                 const wrap1 = document.createElement('div');
                 wrap1.style.cssText = "position: relative; width: 60px; height: 75px;";
-                wrap1.innerHTML = `<img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444;">`;
+                wrap1.innerHTML = `<img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444; cursor: pointer;" onclick="openFullscreen('${src}')">`;
                 profileGrid.appendChild(wrap1);
 
+                const isMain = index === 0;
                 const wrap2 = document.createElement('div');
-                wrap2.style.cssText = "position: relative; width: 60px; height: 75px;";
+                wrap2.style.cssText = "position: relative; width: 65px; height: 80px;";
                 wrap2.innerHTML = `
-                    <img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444;">
+                    <img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: ${isMain ? '2px solid #e50914' : '1px solid #444'};">
+                    ${!isMain ? `<button onclick="setPrimaryPhoto(${index})" title="Définir comme principale" style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.7); color: #ffd700; border: none; border-radius: 4px; padding: 1px 4px; font-size: 0.6rem; cursor: pointer;">⭐</button>` : `<span style="position: absolute; bottom: 2px; left: 2px; background: #e50914; color: #fff; border-radius: 4px; padding: 1px 3px; font-size: 0.55rem; font-weight: bold;">Principale</span>`}
                     <button onclick="deleteMyPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #e50914; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
                 `;
                 editGrid.appendChild(wrap2);
             });
+        }
+
+        function openFullscreen(imgSrc) {
+            document.getElementById('fullscreen-img-element').src = imgSrc;
+            document.getElementById('modal-fullscreen-photo').style.display = 'flex';
+        }
+
+        function closeFullscreen() {
+            document.getElementById('modal-fullscreen-photo').style.display = 'none';
         }
 
         function createNewPrivateAlbum() {
@@ -634,7 +658,7 @@
                 album.photos.forEach((photoSrc, photoIndex) => {
                     photosHtml += `
                         <div style="position: relative; width: 50px; height: 60px;">
-                            <img src="${photoSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #444;">
+                            <img src="${photoSrc}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid #444; cursor: pointer;" onclick="openFullscreen('${photoSrc}')">
                             <button onclick="deletePhotoFromAlbum(${albumIndex}, ${photoIndex})" style="position: absolute; top: -4px; right: -4px; background: #e50914; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
                         </div>
                     `;
@@ -709,7 +733,6 @@
             featuredContainer.innerHTML = '';
 
             registeredProfiles.forEach(profile => {
-                // Si l'utilisateur est en mode invisible, on ne l'affiche pas dans les listes publiques
                 if (profile.email === currentUser.email && isInvisibleActive) return;
 
                 const displayName = profile.pseudo || "Membre";
@@ -744,13 +767,10 @@
             if (!profile) return;
             viewingProfileEmail = email;
 
-            // Enregistrement de la visite dans les 24h glissantes (si le visiteur n'est PAS en mode invisible)
             if (!isInvisibleActive && email !== currentUser.email) {
                 const now = Date.now();
-                // Nettoyage des visites de plus de 24h
                 profileVisitors = profileVisitors.filter(v => now - v.timestamp < 24 * 3600 * 1000);
                 
-                // Ajouter ou mettre à jour la visite de cet utilisateur
                 const existingVisitorIndex = profileVisitors.findIndex(v => v.visitorEmail === currentUser.email);
                 const visitorEntry = {
                     visitorEmail: currentUser.email,
@@ -971,7 +991,7 @@
         function toggleInvisibleMode(checkbox) {
             if (userSubs.invisible === 1 || userSubs.pack_complet === 1) {
                 isInvisibleActive = checkbox.checked;
-                registerUserToCommunity(); // Met à jour la visibilité dans les grilles
+                registerUserToCommunity();
             } else {
                 checkbox.checked = false;
                 alert("Le mode invisible nécessite un abonnement actif.");
