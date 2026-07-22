@@ -40,26 +40,92 @@
         header {
             background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
+            padding: 10px 16px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
+            gap: 10px;
             z-index: 10;
+        }
+
+        .header-search {
+            position: relative;
+        }
+
+        .header-search input {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 10px 6px 30px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            width: 140px;
+        }
+
+        .header-search svg {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            fill: var(--text-secondary);
+        }
+
+        .city-suggestions {
+            display: none;
+            position: absolute;
+            top: 36px;
+            left: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            width: 180px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .city-suggestion-item {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .city-suggestion-item:hover {
+            background: var(--border-color);
         }
 
         .logo {
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--primary-color);
             letter-spacing: 1px;
+            text-align: center;
         }
 
-        .user-indicator {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            background: rgba(255,255,255,0.05);
-            padding: 4px 8px;
-            border-radius: 12px;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
         }
 
         main {
@@ -79,7 +145,7 @@
 
         h2 {
             margin-bottom: 16px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
         }
 
         .pricing-grid {
@@ -112,26 +178,40 @@
         }
 
         .pricing-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
         }
 
         .price {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: var(--primary-color);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+        }
+
+        .btn-action {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .btn-action:hover {
+            background-color: var(--primary-hover);
         }
 
         .btn-report {
             background-color: #333;
             color: #ff4d4d;
             border: 1px solid #ff4d4d;
-            margin-top: 10px;
-        }
-
-        .btn-report:hover {
-            background-color: rgba(255, 77, 77, 0.1);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
 
         nav.bottom-nav {
@@ -157,6 +237,7 @@
             align-items: center;
             cursor: pointer;
             flex: 1;
+            position: relative;
         }
 
         .nav-item.active {
@@ -170,25 +251,44 @@
             fill: currentColor;
         }
 
+        .badge-dot {
+            position: absolute;
+            top: 4px;
+            right: calc(50% - 12px);
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: none;
+        }
+
         .alert-box {
             background-color: rgba(229, 9, 20, 0.1);
             border: 1px solid var(--primary-color);
             padding: 12px;
             border-radius: 6px;
             margin-bottom: 16px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             line-height: 1.4;
         }
 
         .profile-card {
             background: var(--surface-color);
             border-radius: 8px;
-            padding: 16px;
+            padding: 14px;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .profile-card.pending-verification {
+            opacity: 0.65;
+            filter: grayscale(30%);
+            border-color: #f39c12;
         }
 
         .profile-info {
@@ -198,8 +298,8 @@
         }
 
         .avatar-placeholder {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             background: var(--border-color);
             display: flex;
@@ -207,6 +307,54 @@
             justify-content: center;
             font-weight: bold;
             flex-shrink: 0;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .back-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message-bubble {
+            background: var(--surface-color);
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-input-bar {
+            display: flex;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .chat-input-bar input[type="text"] {
+            flex: 1;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
 
         #report-modal {
@@ -219,6 +367,7 @@
             align-items: center;
             padding: 16px;
         }
+
         .modal-content {
             background: var(--surface-color);
             padding: 20px;
@@ -227,9 +376,10 @@
             max-width: 400px;
             border: 1px solid var(--border-color);
         }
+
         .modal-content textarea {
             width: 100%;
-            height: 100px;
+            height: 90px;
             background: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-color);
@@ -243,75 +393,112 @@
 <body>
 
     <header>
+        <div class="header-search">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="city-search-input" placeholder="Ville..." oninput="filterCities(this.value)">
+            <div id="city-suggestions" class="city-suggestions"></div>
+        </div>
         <div class="logo">RUBIS NOIR</div>
-        <div class="user-indicator" id="session-status">Non connecté</div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="switchView('settings', null)" title="Paramètres">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c-.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c-.05.24.24.41.48.41h3.84c-.24 0 .44-.17.47-.41l.36-2.54c-.59-.24-1.13-.56-1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c-.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            </button>
+        </div>
     </header>
 
     <main>
-        <!-- VUE ACCUEIL / ABONNEMENTS -->
+        <!-- VUE ACCUEIL -->
         <section id="view-home" class="view-section active">
-            <h2>Pass & Abonnements</h2>
+            <h2>Accueil & Profils</h2>
             <div class="alert-box">
-                Rappel Charte Rubis Noir : Minimum 2 photos obligatoires sur votre profil pour débloquer l'intégralité des interactions.
+                Rappel Charte Rubis Noir : Minimum 2 photos de visage obligatoires et validées par modération pour débloquer l'intégralité des interactions.
             </div>
 
+            <div class="profile-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'Passionné par l’univers Rubis Noir, premier contact pour échanger.')">
+                <div class="profile-info">
+                    <div class="avatar-placeholder">KG</div>
+                    <div>
+                        <h4>Membre Actif</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">Reims — En ligne</p>
+                    </div>
+                </div>
+                <button class="btn-report" onclick="event.stopPropagation(); openReportModal('Membre Actif')">Signaler</button>
+            </div>
+        </section>
+
+        <!-- VUE DETAIL PROFIL -->
+        <section id="profile-detail-view" class="view-section">
+            <div class="back-bar" onclick="closeProfileDetail()">
+                <svg style="width:20px;height:20px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Retour aux profils
+            </div>
+            <div style="background:var(--surface-color); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+                    <div id="detail-avatar" class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;">MA</div>
+                    <div>
+                        <h3 id="detail-name" style="font-size:1.2rem;">Nom du profil</h3>
+                        <p id="detail-city" style="font-size:0.85rem; color:var(--text-secondary);">Ville</p>
+                    </div>
+                </div>
+                <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
+                <h4 style="font-size:0.95rem; margin-bottom:8px;">À propos</h4>
+                <p id="detail-bio" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.4;">Description du membre...</p>
+                <button class="btn-action" style="width:100%;" onclick="startChatFromProfile()">Envoyer un message</button>
+            </div>
+        </section>
+
+        <!-- VUE ABONNEMENTS / PAYPAL -->
+        <section id="view-subs" class="view-section">
+            <h2>Pass & Abonnements</h2>
             <div class="pricing-grid">
-                <!-- Option 1 : Mode Invisible -->
                 <div class="pricing-card">
                     <h3>Mode Invisible</h3>
                     <div class="price">1,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Visitez incognito.</p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Visitez incognito.</p>
                     <div>
-                      <style>.pp-AVG6QNCSPHHL6{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                      <form action="https://www.paypal.com/ncp/payment/AVG6QNCSPHHL6" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                      <style>.pp-AVG6QNCSPHHL6{text-align:center;border:none;border-radius:0.25rem;min-width:10rem;padding:0 1.5rem;height:2.4rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:sans-serif;font-size:0.9rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/AVG6QNCSPHHL6" method="post" target="_blank" style="display:inline-grid;justify-items:center;gap:0.4rem;">
                         <input class="pp-AVG6QNCSPHHL6" type="submit" value="Acheter" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" style="height:14px;" />
                       </form>
                     </div>
                 </div>
 
-                <!-- Option 2 : Albums Privés -->
                 <div class="pricing-card">
                     <h3>Albums Privés (max 5)</h3>
                     <div class="price">1,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès aux contenus exclusifs.</p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Contenus exclusifs.</p>
                     <div>
-                      <style>.pp-G5DWN82PSLVVY{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                      <form action="https://www.paypal.com/ncp/payment/G5DWN82PSLVVY" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                      <style>.pp-G5DWN82PSLVVY{text-align:center;border:none;border-radius:0.25rem;min-width:10rem;padding:0 1.5rem;height:2.4rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:sans-serif;font-size:0.9rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/G5DWN82PSLVVY" method="post" target="_blank" style="display:inline-grid;justify-items:center;gap:0.4rem;">
                         <input class="pp-G5DWN82PSLVVY" type="submit" value="Acheter" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" style="height:14px;" />
                       </form>
                     </div>
                 </div>
 
-                <!-- Option 3 : Mise en avant -->
                 <div class="pricing-card">
                     <h3>Mise en avant</h3>
                     <div class="price">1,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Votre profil apparaît en haut.</p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Profil en haut.</p>
                     <div>
-                      <style>.pp-MISEENAVANT{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                      <form action="https://www.paypal.com/ncp/payment/" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                      <style>.pp-MISEENAVANT{text-align:center;border:none;border-radius:0.25rem;min-width:10rem;padding:0 1.5rem;height:2.4rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:sans-serif;font-size:0.9rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/MISEENAVANT" method="post" target="_blank" style="display:inline-grid;justify-items:center;gap:0.4rem;">
                         <input class="pp-MISEENAVANT" type="submit" value="Acheter" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" style="height:14px;" />
                       </form>
                     </div>
                 </div>
 
-                <!-- Option 4 : Pass Rubis Complet -->
                 <div class="pricing-card featured">
                     <h3>Pass Rubis Complet</h3>
                     <div class="price">4,99 €</div>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès total à tout.</p>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Accès total.</p>
                     <div>
-                      <style>.pp-DGE9FLKP4C7Q6{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
-                      <form action="https://www.paypal.com/ncp/payment/DGE9FLKP4C7Q6" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                      <style>.pp-DGE9FLKP4C7Q6{text-align:center;border:none;border-radius:0.25rem;min-width:10rem;padding:0 1.5rem;height:2.4rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:sans-serif;font-size:0.9rem;cursor:pointer;}</style>
+                      <form action="https://www.paypal.com/ncp/payment/DGE9FLKP4C7Q6" method="post" target="_blank" style="display:inline-grid;justify-items:center;gap:0.4rem;">
                         <input class="pp-DGE9FLKP4C7Q6" type="submit" value="Acheter" />
-                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
-                        <section style="font-size: 0.75rem;"> Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                        <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" style="height:14px;" />
                       </form>
                     </div>
                 </div>
@@ -321,92 +508,357 @@
         <!-- VUE VISITEURS -->
         <section id="view-visitors" class="view-section">
             <h2>Visiteurs récents</h2>
-            <div class="profile-card">
+            <div class="profile-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'A consulté votre profil récemment.')">
                 <div class="profile-info">
                     <div class="avatar-placeholder">P1</div>
                     <div>
                         <h4>Membre Actif</h4>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">A consulté votre profil</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">A consulté votre profil</p>
                     </div>
                 </div>
-                <button class="btn btn-report" onclick="openReportModal('Membre Actif')">Signaler</button>
+                <button class="btn-report" onclick="event.stopPropagation(); openReportModal('Membre Actif')">Signaler</button>
             </div>
         </section>
 
         <!-- VUE MESSAGES -->
         <section id="view-messages" class="view-section">
             <h2>Messagerie</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 16px;">Vos conversations sécurisées.</p>
-            <div class="profile-card">
-                <div class="profile-info">
-                    <div class="avatar-placeholder">M1</div>
-                    <div>
-                        <h4>Discussion en cours</h4>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Dernier message reçu...</p>
+            <div id="conversations-list">
+                <div class="profile-card" onclick="openChat('Discussion en cours')">
+                    <div class="profile-info">
+                        <div class="avatar-placeholder">M1</div>
+                        <div>
+                            <h4>Discussion en cours</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Dernier message reçu...</p>
+                        </div>
                     </div>
+                    <button class="btn-report" onclick="event.stopPropagation(); deleteConversation(this)">Supprimer</button>
                 </div>
-                <button class="btn btn-report" onclick="openReportModal('Discussion en cours')">Signaler</button>
             </div>
         </section>
 
-        <!-- VUE PROFIL & CONNEXION GOOGLE -->
-        <section id="view-profile" class="view-section">
-            <h2>Mon Compte & Connexion</h2>
-            <div style="margin-bottom: 20px;">
-                <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">Connectez-vous avec votre compte Google en conditions réelles.</p>
+        <!-- VUE DETAIL DISCUSSION -->
+        <section id="chat-detail-view" class="view-section" style="display:none; flex-direction:column; height: calc(100vh - 120px);">
+            <div class="back-bar" onclick="closeChat()">
+                <svg style="width:20px;height:20px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                <span id="chat-title-header">Discussion</span>
+            </div>
+            <div class="chat-messages" id="chat-messages-box">
+                <div class="message-bubble">Bonjour, bienvenue sur Rubis Noir.</div>
+            </div>
+            <div class="chat-input-bar">
+                <input type="file" id="media-file-input" accept="image/*,video/*" style="display:none;" onchange="handleMediaUpload(this)">
+                <button class="icon-btn" onclick="document.getElementById('media-file-input').click()" title="Joindre une photo ou vidéo">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                </button>
+                <input type="text" id="chat-text-input" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="btn-action" onclick="sendMessage()">Envoyer</button>
+            </div>
+        </section>
+
+        <!-- VUE COMPTE DÉVELOPPEUR & MODÉRATION (BOUCLIER) -->
+        <section id="view-developer" class="view-section">
+            <h2>Espace Modération (Développeur)</h2>
+            <div class="alert-box">
+                Panneau administrateur : validez les photos de visage des nouveaux inscrits (ou refusez les paysages/photos non conformes) et examinez les médias envoyés en conversation.
+            </div>
+
+            <!-- SECTION 1 : NOUVEAUX COMPTES EN ATTENTE DE VALIDATION PHOTO -->
+            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Inscriptions en attente de validation photo</h3>
+            <div id="pending-profiles-container" style="margin-bottom: 24px;">
+                <div class="profile-card pending-verification" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="profile-info">
+                            <div class="avatar-placeholder">NEW</div>
+                            <div>
+                                <h4>Nouveau Membre</h4>
+                                <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation (Photos de visage requises)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Aperçu des photos soumises à l'inscription -->
+                    <div style="display: flex; gap: 8px; background: var(--bg-color); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">Photo 1</div>
+                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">Photo 2</div>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); align-self: center; margin-left: 8px;">Vérifier s'il s'agit bien de visages identifiables.</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="btn-report" onclick="rejectAccountPhotos(this)">Refuser (Paysage/Invalide)</button>
+                        <button class="btn-action" onclick="approveAccountPhotos(this)">Valider le profil</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2 : SIGNALEMENTS ET MÉDIAS ENVOYÉS EN CONVERSATION -->
+            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Signalements & Médias de conversation</h3>
+            <div id="reports-list-container">
+                <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="profile-info">
+                            <div class="avatar-placeholder" style="background: #e50914;">!</div>
+                            <div>
+                                <h4>Signalement : Média / Message</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary);">Motif : Contenu bizarre ou non consenti</p>
+                            </div>
+                        </div>
+                        <span style="font-size: 0.75rem; background: #333; padding: 4px 8px; border-radius: 4px;">En attente</span>
+                    </div>
+                    
+                    <div style="background: var(--bg-color); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">Média incriminé en conversation :</p>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div style="width: 50px; height: 50px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-secondary);">Média</div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Image ou vidéo suspecte partagée en message</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="btn-action" style="background: #333; border: 1px solid var(--border-color);" onclick="ignoreReport(this)">Ignorer</button>
+                        <button class="btn-report" onclick="banReportedUser(this)">Bannir l'utilisateur</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VUE PARAMÈTRES / RÈGLES -->
+        <section id="view-settings" class="view-section">
+            <h2>Paramètres & Compte</h2>
+            <div style="margin-bottom: 20px;" id="auth-container">
+                <p style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">Connexion Google sécurisée :</p>
                 <div id="g_id_onload"
                      data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
                      data-callback="handleCredentialResponse">
                 </div>
                 <div class="g_id_signin" data-type="standard"></div>
             </div>
+            <div id="user-session-box" style="display:none; margin-bottom: 20px;">
+                <p style="margin-bottom: 10px; font-size: 0.9rem; color: #4cd137;">● Connecté avec succès</p>
+                <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d;" onclick="logoutUser()">Se déconnecter</button>
+            </div>
+            
+            <div class="alert-box" style="margin-top: 15px;">
+                <h4 style="margin-bottom: 8px; color: var(--primary-color);">Charte Rubis Noir & Règles d'usage</h4>
+                <ol style="padding-left: 16px; font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                    <li>Respect absolu d'autrui et bienveillance obligatoire.</li>
+                    <li>Interdiction stricte des contenus illégaux ou non consentis.</li>
+                    <li>Minimum de deux photos de visage requises et validées manuellement.</li>
+                    <li>Modération active et signalement disponible à tout moment.</li>
+                    <li>Protection des données personnelles et conformité RGPD.</li>
+                    <li>Utilisation exclusive des abonnements officiels sécurisés.</li>
+                </ol>
+            </div>
         </section>
     </main>
 
-    <!-- MODAL DE SIGNALEMENT -->
+    <!-- MODAL DE SIGNALEMENT UTILISATEUR -->
     <div id="report-modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 8px; color: var(--primary-color);">Signalement</h3>
             <p style="font-size: 0.85rem; color: var(--text-secondary);" id="report-target-text">Précisez le motif :</p>
             <textarea id="report-reason" placeholder="Décrivez le problème..."></textarea>
             <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary" onclick="closeReportModal()" style="background:none; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; cursor:pointer;">Annuler</button>
-                <button class="btn" onclick="submitReport()" style="background:var(--primary-color); border:none; color:#fff; padding:8px; border-radius:4px; cursor:pointer; flex:1;">Envoyer</button>
+                <button onclick="closeReportModal()" style="background:none; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; cursor:pointer;">Annuler</button>
+                <button onclick="submitReport()" style="background:var(--primary-color); border:none; color:#fff; padding:8px; border-radius:4px; cursor:pointer; flex:1;">Envoyer</button>
             </div>
         </div>
     </div>
 
     <!-- NAVIGATION INFÉRIEURE -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" id="main-bottom-nav">
         <button class="nav-item active" onclick="switchView('home', this)">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
             Accueil
         </button>
-        <button class="nav-item" onclick="switchView('visitors', this)">
+        <button class="nav-item" onclick="switchView('visitors', this); clearBadge('badge-visitors')">
             <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
             Vues
+            <span id="badge-visitors" class="badge-dot"></span>
         </button>
-        <button class="nav-item" onclick="switchView('messages', this)">
+        <button class="nav-item" onclick="switchView('messages', this); clearBadge('badge-messages')">
             <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
             Messages
+            <span id="badge-messages" class="badge-dot"></span>
         </button>
-        <button class="nav-item" onclick="switchView('profile', this)">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            Profil
+        <button class="nav-item" onclick="switchView('developer', this)" title="Espace Développeur & Modération">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            Bouclier
+            <span id="badge-shield" class="badge-dot" style="display: block;"></span>
+        </button>
+        <button class="nav-item" onclick="switchView('subs', this)">
+            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            Pass
         </button>
     </nav>
 
     <script>
+        const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
+
+        // Demande d'autorisation pour les vraies notifications du système
+        if (window.Notification && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        function triggerRealNotification(title, bodyText) {
+            if (window.Notification && Notification.permission === "granted") {
+                new Notification(title, { body: bodyText });
+            }
+        }
+
+        function filterCities(query) {
+            const container = document.getElementById('city-suggestions');
+            container.innerHTML = '';
+            if (!query.trim()) {
+                container.style.display = 'none';
+                return;
+            }
+            const filtered = FRENCH_CITIES.filter(c => c.toLowerCase().startsWith(query.toLowerCase()));
+            if (filtered.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            filtered.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'city-suggestion-item';
+                item.innerText = city;
+                item.onclick = () => {
+                    document.getElementById('city-search-input').value = city;
+                    container.style.display = 'none';
+                };
+                container.appendChild(item);
+            });
+            container.style.display = 'block';
+        }
+
         function switchView(viewName, element) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById('view-' + viewName).classList.add('active');
+            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('view-' + viewName).style.display = 'block';
+            if (element) {
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+            }
+        }
+
+        function clearBadge(badgeId) {
+            const badge = document.getElementById(badgeId);
+            if (badge) badge.style.display = 'none';
+        }
+
+        function openProfileDetail(name, city, bio) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('detail-name').innerText = name;
+            document.getElementById('detail-city').innerText = city;
+            document.getElementById('detail-bio').innerText = bio;
+            document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
+            document.getElementById('profile-detail-view').style.display = 'block';
+        }
+
+        function closeProfileDetail() {
+            switchView('home', document.querySelector('.nav-item'));
+        }
+
+        function startChatFromProfile() {
+            const profileName = document.getElementById('detail-name').innerText;
+            openChat(profileName);
+        }
+
+        function openChat(title) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('chat-title-header').innerText = title;
+            document.getElementById('chat-detail-view').style.display = 'flex';
+            
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            if(element) element.classList.add('active');
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+            clearBadge('badge-messages');
+        }
+
+        function closeChat() {
+            switchView('messages', document.querySelectorAll('.nav-item')[2]);
+        }
+
+        function deleteConversation(btn) {
+            const card = btn.closest('.profile-card');
+            card.remove();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-text-input');
+            const text = input.value.trim();
+            if (!text) return;
+            const box = document.getElementById('chat-messages-box');
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.style.marginLeft = 'auto';
+            bubble.style.background = '#e50914';
+            bubble.innerText = text;
+            box.appendChild(bubble);
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function handleMediaUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const box = document.getElementById('chat-messages-box');
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                bubble.style.marginLeft = 'auto';
+                bubble.style.background = '#e50914';
+                
+                if (file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(file);
+                    video.controls = true;
+                    video.style.maxWidth = '100%';
+                    video.style.borderRadius = '6px';
+                    bubble.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.maxWidth = '100%';
+                    img.style.borderRadius = '6px';
+                    bubble.appendChild(img);
+                }
+                box.appendChild(bubble);
+                box.scrollTop = box.scrollHeight;
+
+                // Notification système pour signaler qu'un média a été posté (contrôlable)
+                triggerRealNotification("Rubis Noir - Modération", "Un nouveau média a été envoyé en conversation.");
+            }
+        }
+
+        // Actions de validation de compte (Photos de visage)
+        function approveAccountPhotos(btn) {
+            const card = btn.closest('.profile-card');
+            card.remove();
+            // Ici le profil passe en ligne officiellement
+        }
+
+        function rejectAccountPhotos(btn) {
+            const card = btn.closest('.profile-card');
+            card.remove();
+            // Ici le compte est rejeté / invité à refaire ses photos de visage
+        }
+
+        // Actions de modération (Signalements & Médias)
+        function ignoreReport(btn) {
+            const card = btn.closest('.profile-card');
+            card.remove();
+        }
+
+        function banReportedUser(btn) {
+            const card = btn.closest('.profile-card');
+            card.remove();
         }
 
         function handleCredentialResponse(response) {
-            document.getElementById('session-status').innerText = "Connecté";
-            console.log("Authentification Google réussie :", response.credential);
+            console.log("Connecté :", response.credential);
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('user-session-box').style.display = 'block';
+        }
+
+        function logoutUser() {
+            document.getElementById('user-session-box').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
         }
 
         let currentReportTarget = "";
@@ -424,12 +876,19 @@
         function submitReport() {
             const reason = document.getElementById('report-reason').value;
             if(!reason.trim()) {
-                alert("Veuillez indiquer un motif.");
                 return;
             }
-            alert("Votre signalement a bien été transmis à la modération.");
             closeReportModal();
+            triggerRealNotification("Rubis Noir - Modération", "Un utilisateur a envoyé un signalement.");
         }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.header-search')) {
+                document.getElementById('city-suggestions').style.display = 'none';
+            }
+        }
+
+        switchView('home', document.querySelector('.nav-item'));
     </script>
 </body>
 </html>
