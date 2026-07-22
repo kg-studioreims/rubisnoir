@@ -9,7 +9,7 @@ from google.auth.transport import requests as google_requests
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com")
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com")
 DATABASE = '/data/rubis_noir.db' if os.path.exists('/data') else 'rubis_noir.db'
 ADMIN_EMAIL = 'kg.studio.reims@gmail.com'
 
