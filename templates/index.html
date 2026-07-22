@@ -281,7 +281,7 @@
             right: 0;
             background-color: var(--surface-color);
             border-top: 1px solid var(--border-color);
-            display: flex;
+            display: none;
             justify-content: space-around;
             padding: 10px 0;
             z-index: 1000;
@@ -445,7 +445,7 @@
 </head>
 <body>
 
-    <header>
+    <header id="main-header" style="display:none;">
         <div class="header-search">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
             <input type="text" id="city-search-input" placeholder="Ville..." oninput="filterCities(this.value)">
@@ -460,11 +460,36 @@
     </header>
 
     <main>
+        <!-- VUE CONNEXION / ACCUEIL INITIAL -->
+        <section id="view-login" class="view-section active">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 20px; padding: 20px;">
+                <div class="logo" style="font-size: 2rem;">RUBIS NOIR</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 300px; line-height: 1.4;">Connectez-vous pour accéder à votre espace sécurisé et soumettre vos photos de visage (2 minimum requises).</p>
+                <div id="auth-container" style="margin-top: 20px;">
+                    <div id="g_id_onload"
+                         data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
+                         data-callback="handleCredentialResponse">
+                    </div>
+                    <div class="g_id_signin" data-type="standard"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VUE ATTENTE DE VALIDATION MODÉRATION -->
+        <section id="view-pending" class="view-section">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 16px; padding: 20px;">
+                <div style="font-size: 2.5rem; color: var(--primary-color);">🛡️</div>
+                <h2>Compte en cours de modération</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">Votre profil nécessite un minimum de 2 photos de visage et une validation par l'administration. Veuillez patienter.</p>
+                <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d; margin-top: 10px;" onclick="logoutUser()">Se déconnecter</button>
+            </div>
+        </section>
+
         <!-- VUE ACCUEIL -->
-        <section id="view-home" class="view-section active">
+        <section id="view-home" class="view-section">
             <h2>Mise en avant & Profils</h2>
             <div class="alert-box">
-                Charte Rubis Noir : Jusqu'à 5 photos de visage et modération active.
+                Charte Rubis Noir : Minimum 2 photos de visage et modération active.
             </div>
             <div class="profiles-grid" id="home-profiles-grid">
                 <div class="profile-grid-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'Passionné par l’univers Rubis Noir.')">
@@ -485,7 +510,7 @@
                     <div class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;">MO</div>
                     <div>
                         <h3 id="my-profile-name" style="font-size:1.2rem;">Mon Compte</h3>
-                        <p style="font-size:0.85rem; color:var(--text-secondary);">Gérez vos informations et vos photos (max 5)</p>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Gérez vos informations et vos photos (min. 2)</p>
                     </div>
                 </div>
                 <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
@@ -495,7 +520,7 @@
                     <textarea id="my-bio-input" style="width:100%; height:70px; background:var(--bg-color); border:1px solid var(--border-color); color:var(--text-color); padding:8px; border-radius:4px; font-size:0.85rem; resize:none;"></textarea>
                 </div>
 
-                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:10px;">Vos photos (jusqu'à 5) :</p>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:10px;">Vos photos (minimum 2 de visage) :</p>
                 <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;" id="my-photos-container">
                     <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">
                     <div style="width:60px; height:60px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary-color); cursor:pointer;" onclick="document.getElementById('profile-photo-input').click()" title="Ajouter une photo">+</div>
@@ -551,7 +576,7 @@
                 </div>
 
                 <div class="pricing-card">
-                    <h3>Albums Privés (max 5)</h3>
+                    <h3>Albums Privés</h3>
                     <div class="price">1,99 €</div>
                     <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Contenus exclusifs.</p>
                     <div>
@@ -609,7 +634,7 @@
         <section id="view-messages" class="view-section">
             <h2>Messagerie</h2>
             <div id="conversations-list">
-                <!-- Boîte de messages entièrement vide pour repartir de zéro -->
+                <!-- Boîte de messages vide au départ -->
             </div>
         </section>
 
@@ -622,9 +647,7 @@
                 </div>
                 <button class="btn-report" onclick="openReportModal(document.getElementById('chat-title-header').innerText)">Signaler</button>
             </div>
-            <div class="chat-messages" id="chat-messages-box">
-                <!-- Zone de messages vide au départ -->
-            </div>
+            <div class="chat-messages" id="chat-messages-box"></div>
             <div class="chat-input-bar">
                 <input type="file" id="media-file-input" accept="image/*,video/*" style="display:none;" onchange="handleMediaUpload(this)">
                 <button class="icon-btn" onclick="document.getElementById('media-file-input').click()" title="Joindre une photo ou vidéo">
@@ -639,82 +662,35 @@
         <section id="view-developer" class="view-section">
             <h2>Espace Modération (Développeur)</h2>
             <div class="alert-box">
-                Panneau administrateur complet : gestion des profils, bios, validations de 5 photos max, et modération des médias envoyés en conversation.
+                Panneau administrateur : gestion des inscriptions, validations des photos (min. 2), signalements et médias en conversation.
             </div>
 
-            <!-- SECTION 1 : MODÉRATION DES BIOS -->
-            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Contrôle des Descriptions (Bios)</h3>
-            <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4>Membre Actif</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">Reims</span>
-                </div>
-                <p style="font-size:0.85rem; background:var(--bg-color); padding:8px; border-radius:4px; border:1px solid var(--border-color);">« Passionné par l’univers Rubis Noir. »</p>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-report" onclick="warnUserBio(this)">Envoyer avertissement</button>
-                    <button class="btn-report" onclick="banReportedUser(this)">Bannir</button>
-                </div>
+            <!-- SECTION 1 : INSCRIPTIONS & PHOTOS EN ATTENTE -->
+            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Inscriptions & Photos (Minimum 2)</h3>
+            <div id="pending-profiles-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Les inscriptions s'ajouteront dynamiquement ici l'une sous l'autre -->
             </div>
 
-            <!-- SECTION 2 : INSCRIPTIONS & 5 PHOTOS -->
-            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12; margin-top:16px;">Inscriptions & Photos (Max 5)</h3>
-            <div id="pending-profiles-container" style="margin-bottom: 24px;">
-                <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 10px; border-color: #f39c12;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="profile-info">
-                            <div class="avatar-placeholder">NEW</div>
-                            <div>
-                                <h4>Nouveau Membre</h4>
-                                <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation photo</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px; background: var(--bg-color); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); overflow-x: auto;">
-                        <div style="width: 50px; height: 50px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; flex-shrink:0;" onclick="openPhotoModal('Photo 1')">P1</div>
-                        <div style="width: 50px; height: 50px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; flex-shrink:0;" onclick="openPhotoModal('Photo 2')">P2</div>
-                    </div>
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                        <button class="btn-report" onclick="rejectAccountPhotos(this)">Refuser</button>
-                        <button class="btn-action" onclick="approveAccountPhotos(this)">Valider le profil</button>
-                    </div>
-                </div>
+            <!-- SECTION 2 : SIGNALEMENTS -->
+            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #ff4d4d; margin-top:16px;">Signalements reçus</h3>
+            <div id="reports-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun signalement en cours.</p>
             </div>
 
             <!-- SECTION 3 : MÉDIAS ENVOYÉS EN CONVERSATION -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Médias récents en conversation</h3>
-            <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4>Membre Actif</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">Photo partagée</span>
-                </div>
-                <div style="width:100%; height:120px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary);">
-                    [Aperçu Média Chat]
-                </div>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-action" style="padding:6px 10px; font-size:0.75rem;" onclick="openChat('Membre Actif')">Ouvrir conversation</button>
-                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Supprimer le média</button>
-                </div>
+            <div id="media-moderation-container" style="display: flex; flex-direction: column; gap: 12px;">
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun média récent.</p>
             </div>
         </section>
 
         <!-- VUE PARAMÈTRES -->
         <section id="view-settings" class="view-section">
             <h2>Paramètres & Compte</h2>
-            <div style="margin-bottom: 20px;" id="auth-container">
-                <p style="margin-bottom: 12px; font-size: 0.85rem; color: var(--text-secondary);">Connexion Google sécurisée :</p>
-                <div id="g_id_onload"
-                     data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse">
-                </div>
-                <div class="g_id_signin" data-type="standard"></div>
-            </div>
-            <div id="user-session-box" style="display:none; margin-bottom: 20px;">
-                <p id="logged-user-email" style="margin-bottom: 10px; font-size: 0.9rem; color: #4cd137;">● Connecté</p>
-                <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d;" onclick="logoutUser()">Se déconnecter</button>
-            </div>
             
             <div style="margin-bottom: 20px;">
-                <button class="btn-action" style="width:100%;" onclick="switchView('subs', null)">Accéder aux Pass & Abonnements</button>
+                <button class="btn-action" style="width:100%; margin-bottom: 12px;" onclick="switchView('subs', null)">Accéder aux Pass & Abonnements</button>
+                <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d; width:100%;" onclick="logoutUser()">Se déconnecter</button>
             </div>
 
             <div class="alert-box">
@@ -722,7 +698,7 @@
                 <ol style="padding-left: 16px; font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
                     <li>Respect absolu d'autrui et bienveillance obligatoire.</li>
                     <li>Interdiction stricte des contenus illégaux ou non consentis.</li>
-                    <li>Jusqu'à 5 photos de visage requises et validées par modération.</li>
+                    <li>Minimum 2 photos de visage requises et validées par modération.</li>
                     <li>Modération active et signalement disponible à tout moment.</li>
                     <li>Protection des données personnelles et conformité RGPD.</li>
                     <li>Utilisation exclusive des abonnements officiels sécurisés.</li>
@@ -735,7 +711,7 @@
     <div id="photo-preview-modal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="photo-modal-title" style="margin-bottom: 12px; color: #f39c12;">Aperçu Photo</h3>
-            <div style="width: 100%; height: 250px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 16px;">
+            <div id="modal-photo-container" style="width: 100%; height: 250px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 16px; overflow:hidden;">
                 [Photo HD / Visage]
             </div>
             <button onclick="closePhotoModal()" class="btn-action" style="width: 100%;">Fermer</button>
@@ -786,6 +762,8 @@
         const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
         let myPhotos = [];
         let isDeveloper = false;
+        let isProfileApproved = false;
+        let currentUserEmail = "";
         const ADMIN_EMAIL = "kg.studio.reims@gmail.com";
 
         if (window.Notification && Notification.permission !== "granted") {
@@ -876,11 +854,6 @@
             switchView('messages', document.querySelectorAll('.nav-item')[2]);
         }
 
-        function deleteConversation(btn) {
-            const card = btn.closest('.profile-card');
-            card.remove();
-        }
-
         function sendMessage() {
             const input = document.getElementById('chat-text-input');
             const text = input.value.trim();
@@ -899,6 +872,7 @@
         function handleMediaUpload(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+                const fileUrl = URL.createObjectURL(file);
                 const box = document.getElementById('chat-messages-box');
                 const bubble = document.createElement('div');
                 bubble.className = 'message-bubble';
@@ -906,23 +880,46 @@
                 bubble.style.background = '#e50914';
                 
                 const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
+                img.src = fileUrl;
                 img.style.maxWidth = '100%';
                 img.style.borderRadius = '6px';
                 bubble.appendChild(img);
                 box.appendChild(bubble);
                 box.scrollTop = box.scrollHeight;
 
+                addMediaToDeveloperShield(fileUrl);
                 triggerRealNotification("Rubis Noir - Modération", "Un nouveau média a été envoyé en conversation.");
             }
         }
 
+        function addMediaToDeveloperShield(url) {
+            const container = document.getElementById('media-moderation-container');
+            if (container.innerHTML.includes('Aucun média')) container.innerHTML = '';
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.style.flexDirection = 'column';
+            card.style.alignItems = 'stretch';
+            card.style.gap = '8px';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>${currentUserEmail}</h4>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">Photo partagée</span>
+                </div>
+                <div style="width:100%; height:120px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-action" style="padding:6px 10px; font-size:0.75rem;" onclick="openChat('${currentUserEmail}')">Ouvrir conversation</button>
+                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Supprimer le média</button>
+                </div>
+            `;
+            container.prepend(card);
+            const badge = document.getElementById('badge-shield');
+            if (badge) badge.style.display = 'block';
+        }
+
         function handleProfilePhotoUpload(input) {
             if (input.files && input.files[0]) {
-                if (myPhotos.length >= 5) {
-                    alert("Maximum de 5 photos atteint.");
-                    return;
-                }
                 myPhotos.push(URL.createObjectURL(input.files[0]));
                 renderMyPhotos();
             }
@@ -933,41 +930,82 @@
             container.innerHTML = `
                 <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">
             `;
-            myPhotos.forEach((url, idx) => {
+            myPhotos.forEach((url) => {
                 const thumb = document.createElement('div');
                 thumb.style.cssText = "width:60px; height:60px; background:#333; border-radius:6px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;";
                 thumb.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
                 container.appendChild(thumb);
             });
-            if (myPhotos.length < 5) {
-                const addBtn = document.createElement('div');
-                addBtn.style.cssText = "width:60px; height:60px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary-color); cursor:pointer;";
-                addBtn.innerHTML = "+";
-                addBtn.onclick = () => document.getElementById('profile-photo-input').click();
-                container.appendChild(addBtn);
-            }
+            const addBtn = document.createElement('div');
+            addBtn.style.cssText = "width:60px; height:60px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary-color); cursor:pointer;";
+            addBtn.innerHTML = "+";
+            addBtn.onclick = () => document.getElementById('profile-photo-input').click();
+            container.appendChild(addBtn);
         }
 
         function saveMyProfile() {
-            alert("Modifications enregistrées avec succès.");
+            if (myPhotos.length < 2) {
+                alert("Il vous faut au minimum 2 photos de visage pour valider votre profil.");
+                return;
+            }
+            alert("Modifications enregistrées. En attente de validation admin.");
+            if (!isDeveloper && !isProfileApproved) {
+                submitProfileForModeration();
+            }
         }
 
-        function approveAccountPhotos(btn) {
-            btn.closest('.profile-card').remove();
+        function submitProfileForModeration() {
+            const container = document.getElementById('pending-profiles-container');
+            if (container.innerHTML.includes('Aucune inscription')) container.innerHTML = '';
+            
+            const cardId = 'pending-' + Date.now();
+            const card = document.createElement('div');
+            card.id = cardId;
+            card.className = 'profile-card';
+            card.style.cssText = "flex-direction: column; align-items: stretch; gap: 10px; border-color: #f39c12;";
+            
+            let photosHtml = '';
+            myPhotos.forEach((url, i) => {
+                photosHtml += `<div style="width: 50px; height: 50px; background: #333; border-radius: 4px; overflow:hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink:0;" onclick="openPhotoModal('${currentUserEmail} - Photo ${i+1}', '${url}')"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+            });
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="profile-info">
+                        <div class="avatar-placeholder">${currentUserEmail.substring(0,2).toUpperCase()}</div>
+                        <div>
+                            <h4>${currentUserEmail}</h4>
+                            <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation photo</p>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; background: var(--bg-color); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); overflow-x: auto;">
+                    ${photosHtml}
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-report" onclick="rejectAccount('${cardId}')">Refuser</button>
+                    <button class="btn-action" onclick="approveAccount('${cardId}')">Valider le profil</button>
+                </div>
+            `;
+            container.prepend(card);
+            const badge = document.getElementById('badge-shield');
+            if (badge) badge.style.display = 'block';
         }
 
-        function rejectAccountPhotos(btn) {
-            btn.closest('.profile-card').remove();
+        function approveAccount(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) card.remove();
+            isProfileApproved = true;
+            document.getElementById('main-header').style.display = 'grid';
+            document.getElementById('main-bottom-nav').style.display = 'flex';
+            switchView('home', document.querySelector('.nav-item'));
+            triggerRealNotification("Rubis Noir", "Votre profil a été validé par l'administration !");
         }
 
-        function warnUserBio(btn) {
-            alert("Un avertissement a été envoyé à l'utilisateur suite à sa description.");
-            triggerRealNotification("Rubis Noir", "Votre description enfreint la charte. Veuillez la modifier.");
-        }
-
-        function banReportedUser(btn) {
-            btn.closest('.profile-card').remove();
-            alert("Utilisateur banni.");
+        function rejectAccount(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) card.remove();
+            alert("Profil refusé.");
         }
 
         function blockProfileUser() {
@@ -979,8 +1017,14 @@
             closeProfileDetail();
         }
 
-        function openPhotoModal(title) {
+        function openPhotoModal(title, url) {
             document.getElementById('photo-modal-title').innerText = title;
+            const container = document.getElementById('modal-photo-container');
+            if (url) {
+                container.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;">`;
+            } else {
+                container.innerHTML = '[Photo HD / Visage]';
+            }
             document.getElementById('photo-preview-modal').style.display = 'flex';
         }
 
@@ -991,19 +1035,26 @@
         function handleCredentialResponse(response) {
             try {
                 const data = jwt_decode(response.credential);
-                const userEmail = data.email;
+                currentUserEmail = data.email;
                 const bioInput = document.getElementById('my-bio-input');
 
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('logged-user-email').innerText = `● Connecté (${userEmail})`;
-                document.getElementById('user-session-box').style.display = 'block';
-
-                if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                if (currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     isDeveloper = true;
+                    isProfileApproved = true;
                     bioInput.value = "Créateur de l'application Rubis Noir.";
+                    document.getElementById('main-header').style.display = 'grid';
+                    document.getElementById('main-bottom-nav').style.display = 'flex';
+                    switchView('home', document.querySelector('.nav-item'));
                 } else {
                     isDeveloper = false;
                     bioInput.value = "";
+                    if (myPhotos.length >= 2 && isProfileApproved) {
+                        document.getElementById('main-header').style.display = 'grid';
+                        document.getElementById('main-bottom-nav').style.display = 'flex';
+                        switchView('home', document.querySelector('.nav-item'));
+                    } else {
+                        switchView('pending', null);
+                    }
                 }
             } catch (e) {
                 console.error("Erreur de décodage du token Google", e);
@@ -1012,10 +1063,13 @@
 
         function logoutUser() {
             isDeveloper = false;
+            isProfileApproved = false;
+            currentUserEmail = "";
+            myPhotos = [];
             document.getElementById('my-bio-input').value = "";
-            document.getElementById('user-session-box').style.display = 'none';
-            document.getElementById('auth-container').style.display = 'block';
-            switchView('home', document.querySelector('.nav-item'));
+            document.getElementById('main-header').style.display = 'none';
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            switchView('login', null);
         }
 
         let currentReportTarget = "";
@@ -1033,6 +1087,27 @@
         function submitReport() {
             const reason = document.getElementById('report-reason').value;
             if(!reason.trim()) return;
+            
+            const container = document.getElementById('reports-container');
+            if (container.innerHTML.includes('Aucun signalement')) container.innerHTML = '';
+            
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.style.cssText = "flex-direction: column; align-items: stretch; gap: 8px; border-color: #ff4d4d;";
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="color:#ff4d4d;">Cible : ${currentReportTarget}</h4>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">Signalé par ${currentUserEmail}</span>
+                </div>
+                <p style="font-size:0.85rem; background:var(--bg-color); padding:8px; border-radius:4px; border:1px solid var(--border-color);">${reason}</p>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Traiter / Supprimer</button>
+                </div>
+            `;
+            container.prepend(card);
+            const badge = document.getElementById('badge-shield');
+            if (badge) badge.style.display = 'block';
+
             closeReportModal();
             triggerRealNotification("Rubis Noir - Modération", "Un signalement a été transmis à l'équipe.");
         }
@@ -1043,7 +1118,7 @@
             }
         }
 
-        switchView('home', document.querySelector('.nav-item'));
+        switchView('login', null);
     </script>
 </body>
 </html>
