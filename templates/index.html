@@ -805,18 +805,53 @@
             document.getElementById('sub-content-subscribed').style.display = isSubscribed ? 'flex' : 'none';
             document.getElementById('modal-subscription').style.display = 'flex';
         }
+
         function processOptionCheckout(optionName, price) {
-            isSubscribed = true;
-            alert(`Paiement de ${price} € validé pour l'option : ${optionName} !`);
-            openSubscription();
-            renderPrivateAlbumsUI();
+            fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: optionName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    isSubscribed = true;
+                    alert(`Paiement de ${price} € validé pour l'option : ${optionName} !`);
+                    openSubscription();
+                    renderPrivateAlbumsUI();
+                } else {
+                    alert("Erreur lors de la validation : " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Erreur:', err);
+                alert("Erreur de communication avec le serveur.");
+            });
         }
+
         function processGooglePlayCheckout() {
-            isSubscribed = true;
-            alert("Paiement de 4,99 € validé pour le Pass Complet via Google Play !");
-            openSubscription();
-            renderPrivateAlbumsUI();
+            fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: 'Pass Complet Rubis' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    isSubscribed = true;
+                    alert("Paiement de 4,99 € validé pour le Pass Complet via Google Play !");
+                    openSubscription();
+                    renderPrivateAlbumsUI();
+                } else {
+                    alert("Erreur lors de la validation : " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Erreur:', err);
+                alert("Erreur de communication avec le serveur.");
+            });
         }
+
         function openPrivacy() { closeSettings(); document.getElementById('modal-privacy').style.display = 'flex'; }
         function openReportModal() { closeSettings(); document.getElementById('modal-report').style.display = 'flex'; }
         function submitReport() {
