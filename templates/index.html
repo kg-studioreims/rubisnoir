@@ -7,45 +7,43 @@
     <!-- Script Google officiel -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; }
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #121212; color: white; padding-bottom: 70px; }
         
-        /* PAGE DE CONNEXION */
-        #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #0d0d0d; }
-        #login-screen h1 { color: #e60000; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        /* PAGE DE CONNEXION INITIALE */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: #0d0d0d; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
+        #login-screen h1 { color: #e60000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
         
-        /* APPLICATION PRINCIPALE */
-        #main-app { display: none; padding: 20px; }
+        /* APPLICATION PRINCIPALE (Masquée par défaut avant connexion) */
+        #main-app { display: none; }
+
+        /* HEADER SUPÉRIEUR */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: #1a1a1a; border-bottom: 1px solid #333; }
+        .logo { color: #e60000; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
         
-        header { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid #333; align-items: center; }
-        .nav-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        button { background-color: #e60000; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; position: relative; }
-        button:hover { background-color: #ff1a1a; }
-        
-        /* Pastilles de notifications (Vues/Messages) */
-        .badge { position: absolute; top: -8px; right: -8px; background: white; color: #e60000; font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 50%; display: none; }
-        
-        .section { display: none; margin-top: 20px; }
+        /* CONTENU DES SECTIONS */
+        .section { display: none; padding: 20px; }
         .active-section { display: block; }
         
-        /* Design des messages avec bouton signaler */
-        .msg-container { border: 1px solid #444; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background-color: #262626; border-radius: 5px; }
-        .report-btn-msg { background-color: #ff4444; font-size: 12px; padding: 5px 10px; }
-        
-        /* Modale Paramètres */
-        #settings-modal { display: none; position: fixed; top: 5%; left: 50%; transform: translate(-50%, 0); background: #262626; padding: 20px; border: 1px solid #444; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; z-index: 1000; }
-        .paypal-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; background-color: #ffc439; color: #003087; font-weight: bold; text-align: center; border-radius: 5px; cursor: pointer; text-decoration: none; border: none; }
-        .settings-block { border: 1px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
-        .settings-block button { width: 100%; margin-bottom: 10px; }
+        /* BARRE DE NAVIGATION INFÉRIEURE */
+        nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        nav button { background: none; border: none; color: #aaa; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        nav button.active, nav button:hover { color: #e60000; }
+        nav span { font-size: 20px; margin-bottom: 3px; }
+
+        /* BOUTONS ET BLOCS PARAMÈTRES */
+        .btn-rouge { background-color: #e60000; color: white; border: none; padding: 12px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin: 10px 0; }
+        .btn-paypal { background-color: #ffc439; color: #003087; border: none; padding: 12px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin: 8px 0; }
+        .charte-box { border: 1px solid #e60000; padding: 15px; border-radius: 5px; margin-top: 15px; background-color: #1a0000; }
     </style>
 </head>
 <body>
 
-    <!-- 1. ÉCRAN DE VERROUILLAGE / CONNEXION -->
+    <!-- 1. ÉCRAN DE CONNEXION (Visible au lancement) -->
     <div id="login-screen">
         <h1>Rubis Noir</h1>
-        <p>Veuillez vous connecter pour accéder à l'application.</p>
+        <p style="color: #aaa; margin-bottom: 20px;">Veuillez vous connecter pour accéder à l'application.</p>
         <div id="g_id_onload"
-             data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
+             data-client_id="TON_CLIENT_ID_GOOGLE_ICI.apps.googleusercontent.com"
              data-context="signin"
              data-ux_mode="popup"
              data-callback="handleGoogleLogin">
@@ -55,99 +53,103 @@
 
     <!-- 2. APPLICATION PRINCIPALE -->
     <div id="main-app">
+        <!-- HEADER -->
         <header>
-            <div class="nav-group">
-                <button onclick="showSection('accueil')">Accueil</button>
-                <!-- Onglets avec emplacements pour futures notifications -->
-                <button onclick="showSection('vues')">Vues <span class="badge" id="badge-vues">0</span></button>
-                <button onclick="showSection('messages')">Messages <span class="badge" id="badge-messages">0</span></button>
-                <button onclick="showSection('profil')">Mon Profil</button>
-                <!-- Bouclier Modération -->
-                <button id="btn-admin" style="display: none;" onclick="showSection('dashboard')">🛡️ Modération</button>
-            </div>
-            <button onclick="toggleSettings()">⚙️ Paramètres</button>
+            <input type="text" placeholder="Ville..." style="background:#222; border:1px solid #444; color:white; padding:5px 10px; border-radius:4px;">
+            <div class="logo">Rubis Noir</div>
+            <button onclick="showSection('parametres', null)" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">⚙️</button>
         </header>
 
+        <!-- SECTION ACCUEIL -->
         <div id="accueil" class="section active-section">
-            <h2>Bienvenue sur Rubis Noir</h2>
-            <p>Le flux d'actualité et le contenu principal viennent ici...</p>
+            <h2>Accueil</h2>
+            <p>Flux principal...</p>
         </div>
 
+        <!-- SECTION VUES -->
         <div id="vues" class="section">
-            <h2>Vos Vues</h2>
-            <p>Ici s'afficheront les profils des membres qui ont visité votre page.</p>
+            <h2>Vues</h2>
+            <p>Membres ayant consulté votre profil.</p>
         </div>
 
+        <!-- SECTION MESSAGES -->
         <div id="messages" class="section">
-            <h2>Vos Conversations</h2>
-            <!-- Exemple de structure d'une conversation avec le bouton signaler -->
-            <div class="msg-container">
-                <div><strong>Membre_01</strong> : Bonjour, comment vas-tu ?</div>
-                <button class="report-btn-msg" onclick="alert('Signalement envoyé à la modération.')">🚨 Signaler</button>
-            </div>
+            <h2>Messages</h2>
+            <p>Vos conversations...</p>
         </div>
 
+        <!-- SECTION PROFIL -->
         <div id="profil" class="section">
             <h2>Mon Profil</h2>
-            <p>Ajoutez vos photos :</p>
-            <input type="file" accept="image/*" id="photo-upload-1">
-            <input type="file" accept="image/*" id="photo-upload-2">
-            <br><br>
-            <textarea placeholder="Votre biographie..." style="width: 100%; height: 80px;"></textarea>
-            <br><br>
-            <button>Sauvegarder le profil</button>
+            <p>Gestion de vos photos et informations.</p>
         </div>
 
-        <div id="dashboard" class="section">
-            <h2 style="color: #e60000;">🛡️ Interface Développeur</h2>
-            <p>Gestion de la communauté, traitement des signalements et administration de Rubis Noir.</p>
-        </div>
-    </div>
+        <!-- SECTION PARAMÈTRES (Avec tous tes boutons fonctionnels) -->
+        <div id="parametres" class="section">
+            <h2>Paramètres & Compte</h2>
+            
+            <h3 style="margin-top: 20px; color: #e60000;">Abonnements</h3>
+            <button class="btn-paypal" onclick="alert Redirection PayPal 1">Abonnement 1 - PayPal</button>
+            <button class="btn-paypal" onclick="alert Redirection PayPal 2">Abonnement 2 - PayPal</button>
+            <button class="btn-paypal" onclick="alert Redirection PayPal 3">Abonnement 3 - PayPal</button>
+            <button class="btn-paypal" onclick="alert Redirection PayPal 4">Abonnement 4 - PayPal</button>
 
-    <!-- 3. MODALE DES PARAMÈTRES -->
-    <div id="settings-modal">
-        <h2>Paramètres</h2>
-        
-        <div class="settings-block">
-            <h3>Vos Abonnements</h3>
-            <!-- Restauration des 4 boutons PayPal -->
-            <button class="paypal-btn">Abonnement 1 - PayPal</button>
-            <button class="paypal-btn">Abonnement 2 - PayPal</button>
-            <button class="paypal-btn">Abonnement 3 - PayPal</button>
-            <button class="paypal-btn">Abonnement 4 - PayPal</button>
+            <div class="charte-box">
+                <h3 style="color: #e60000; margin-top:0;">Charte Rubis Noir & Règles d'usage</h3>
+                <ol style="padding-left: 20px; font-size: 14px; line-height: 1.6;">
+                    <li>Respect absolu d'autrui et bienveillance obligatoire.</li>
+                    <li>Interdiction stricte des contenus illégaux ou non consentis.</li>
+                    <li>Jusqu'à 5 photos de visage requises et validées par modération.</li>
+                    <li>Modération active et signalement disponible à tout moment.</li>
+                    <li>Protection des données personnelles et conformité RGPD.</li>
+                    <li>Utilisation exclusive des abonnements officiels sécurisés.</li>
+                </ol>
+            </div>
+
+            <button class="btn-rouge" style="background-color: #ff4444; margin-top: 20px;" onclick="alert('Signalement général envoyé.')">🚨 Signalement général (Problème/Bug)</button>
+            <button class="btn-rouge" style="background-color: #444;" onclick="location.reload()">Déconnexion</button>
         </div>
 
-        <div class="settings-block">
-            <h3>Sécurité & Informations</h3>
-            <button style="background-color: #333;">Charte Rubis Noir & Règlement</button>
-            <button style="background-color: #ff4444;">🚨 Signalement général (Problème/Bug)</button>
-        </div>
-
-        <button style="width: 100%; background-color: #555; margin-bottom: 10px;">Déconnexion</button>
-        <button onclick="toggleSettings()" style="width: 100%; background-color: #262626; border: 1px solid #666;">Fermer</button>
+        <!-- BARRE DE NAVIGATION INFÉRIEURE -->
+        <nav>
+            <button onclick="showSection('accueil', this)" class="active">
+                <span>🏠</span>Accueil
+            </button>
+            <button onclick="showSection('vues', this)">
+                <span>👁️</span>Vues
+            </button>
+            <button onclick="showSection('messages', this)">
+                <span>💬</span>Messages
+            </button>
+            <button onclick="showSection('profil', this)">
+                <span>👤</span>Profil
+            </button>
+        </nav>
     </div>
 
     <script>
-        // Gestion de la connexion Google
-        function handleGoogleLogin(response) {
-            const token = response.credential;
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
+            document.getElementById(sectionId).classList.add('active-section');
             
+            if(element) {
+                document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+            }
+        }
+
+        function handleGoogleLogin(response) {
             fetch('/api/auth/google', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: token })
+                body: JSON.stringify({ token: response.credential })
             })
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    // Cache l'écran de verrouillage, affiche l'application
+                    // Masque l'écran de connexion et affiche l'application
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'block';
-                    
-                    // Débloque le bouclier modération pour toi
-                    if(data.user.email === "kg.studio.reims@gmail.com" || data.user.is_admin) {
-                        document.getElementById('btn-admin').style.display = 'inline-block';
-                    }
                 } else {
                     alert("Erreur de connexion au serveur.");
                 }
@@ -155,42 +157,6 @@
             .catch(err => {
                 console.error("Erreur:", err);
             });
-        }
-
-        // Navigation entre les onglets
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
-            document.getElementById(sectionId).classList.add('active-section');
-        }
-
-        // Ouverture/Fermeture des paramètres
-        function toggleSettings() {
-            const modal = document.getElementById('settings-modal');
-            if (modal.style.display === 'none' || modal.style.display === '') {
-                modal.style.display = 'block';
-            } else {
-                modal.style.display = 'none';
-            }
-        }
-
-        // Fonction prête pour le backend : mettre à jour les notifications Vues/Messages
-        function updateNotifications(unreadViews, unreadMessages) {
-            const badgeVues = document.getElementById('badge-vues');
-            const badgeMessages = document.getElementById('badge-messages');
-            
-            if (unreadViews > 0) {
-                badgeVues.style.display = 'inline-block';
-                badgeVues.innerText = unreadViews;
-            } else {
-                badgeVues.style.display = 'none';
-            }
-
-            if (unreadMessages > 0) {
-                badgeMessages.style.display = 'inline-block';
-                badgeMessages.innerText = unreadMessages;
-            } else {
-                badgeMessages.style.display = 'none';
-            }
         }
     </script>
 </body>
