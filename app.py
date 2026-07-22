@@ -1,10 +1,13 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
+import json
+import time
+from flask import Flask, render_template, request, session, jsonify, g
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 DATABASE = 'rubis_noir.db'
+ADMIN_EMAIL = 'kg.studio.reims@gmail.com'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -22,6 +25,7 @@ def close_connection(exception):
 def init_db():
     with app.app_context():
         db = get_db()
+        # Ajout de la colonne 'approved' pour la modération
         db.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 email TEXT PRIMARY KEY,
@@ -30,6 +34,7 @@ def init_db():
                 city TEXT,
                 photos TEXT,
                 albums TEXT,
+                approved INTEGER DEFAULT 0,
                 sub_invisible INTEGER DEFAULT 0,
                 sub_boost INTEGER DEFAULT 0,
                 sub_albums INTEGER DEFAULT 0,
@@ -60,77 +65,172 @@ def init_db():
 
 init_db()
 
+# --- ROUTES PRINCIPALES ---
+
 @app.route('/')
 def index():
-    user_email = session.get('user_email')
-    user_data = None
-    if user_email:
-        db = get_db()
-        cursor = db.execute('SELECT * FROM users WHERE email = ?', (user_email,))
-        row = cursor.fetchone()
-        if row:
-            user_data = dict(row)
-    
-    is_admin = (user_email == 'admin@rubisnoir.fr')
-    return render_template('index.html', user=user_email, user_data=user_data, is_admin=is_admin)
+    # Sert uniquement le fichier index.html, le JS s'occupe du reste
+    return render_template('index.html')
 
-@app.route('/login', methods=['POST'])
+# --- API AUTHENTIFICATION & PROFIL ---
+
+@app.route('/api/auth/login', methods=['POST'])
 def login():
-    email = request.form.get('email')
-    name = request.form.get('name')
-    if email:
-        session['user_email'] = email
-        db = get_db()
+    data = request.json
+    email = data.get('email')
+    if not email:
+        return jsonify({'success': False}), 400
+    
+    session['user_email'] = email
+    db = get_db()
+    cursor = db.execute('SELECT * FROM users WHERE email = ?', (email,))
+    row = cursor.fetchone()
+    
+    if not row:
+        # L'admin est approuvé par défaut, les autres doivent attendre
+        is_admin = 1 if email.lower() == ADMIN_EMAIL.lower() else 0
+        db.execute('INSERT INTO users (email, pseudo, bio, city, photos, albums, approved) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                   (email, email.split('@')[0], 'Nouveau membre', 'Reims', '[]', '[]', is_admin))
+        db.commit()
         cursor = db.execute('SELECT * FROM users WHERE email = ?', (email,))
-        if not cursor.fetchone():
-            db.execute('INSERT INTO users (email, pseudo, bio, city, photos, albums) VALUES (?, ?, ?, ?, ?, ?)',
-                       (email, name, 'Membre de la communauté Rubis Noir.', 'Reims', '[]', '[]'))
-            db.commit()
-    return redirect(url_for('index'))
+        row = cursor.fetchone()
 
-@app.route('/logout')
-def logout():
-    session.pop('user_email', None)
-    return redirect(url_for('index'))
+    user_data = dict(row)
+    try:
+        user_data['photos'] = json.loads(user_data['photos'])
+    except:
+        user_data['photos'] = []
 
-@app.route('/api/profile', methods=['GET', 'POST'])
-def handle_profile():
+    return jsonify({
+        'success': True,
+        'user': {
+            'email': user_data['email'],
+            'approved': bool(user_data['approved']),
+            'photos': user_data['photos'],
+            'bio': user_data['bio']
+        }
+    })
+
+@app.route('/api/profile/update', methods=['POST'])
+def update_profile():
     user_email = session.get('user_email')
     if not user_email:
-        return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
+        return jsonify({'success': False, 'message': 'Non authentifié'}), 401
     
+    data = request.json
     db = get_db()
-    if request.method == 'POST':
-        data = request.json
-        db.execute('''
-            UPDATE users SET pseudo = ?, bio = ?, city = ?, photos = ?, albums = ?, invisible_active = ?
-            WHERE email = ?
-        ''', (
-            data.get('pseudo'),
-            data.get('bio'),
-            data.get('city'),
-            str(data.get('photos', [])),
-            str(data.get('albums', [])),
-            1 if data.get('invisible_active') else 0,
-            user_email
-        ))
-        db.commit()
-        return jsonify({'status': 'success'})
     
-    cursor = db.execute('SELECT * FROM users WHERE email = ?', (user_email,))
-    row = cursor.fetchone()
-    return jsonify(dict(row) if row else {})
+    photos_str = json.dumps(data.get('photos', []))
+    bio = data.get('bio', '')
+    
+    db.execute('UPDATE users SET bio = ?, photos = ? WHERE email = ?', (bio, photos_str, user_email))
+    db.commit()
+    return jsonify({'success': True})
 
-@app.route('/api/profiles', methods=['GET'])
-def get_all_profiles():
+# --- API MODÉRATION ---
+
+@app.route('/api/moderation/submit', methods=['POST'])
+def submit_moderation():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'success': False}), 401
+    
+    data = request.json
     db = get_db()
-    cursor = db.execute('SELECT email, pseudo, bio, city, photos, invisible_active FROM users')
-    profiles = []
+    
+    photos_str = json.dumps(data.get('photos', []))
+    bio = data.get('bio', '')
+    
+    # Met à jour les photos mais garde le statut non-approuvé (0)
+    db.execute('UPDATE users SET bio = ?, photos = ? WHERE email = ?', (bio, photos_str, user_email))
+    db.commit()
+    return jsonify({'success': True})
+
+@app.route('/api/admin/pending', methods=['GET'])
+def get_pending_users():
+    user_email = session.get('user_email')
+    if not user_email or user_email.lower() != ADMIN_EMAIL.lower():
+        return jsonify({'success': False}), 403
+        
+    db = get_db()
+    cursor = db.execute("SELECT email, photos FROM users WHERE approved = 0")
+    pending = [dict(row) for row in cursor.fetchall()]
+    return jsonify({'success': True, 'pending': pending})
+
+@app.route('/api/admin/approve', methods=['POST'])
+def approve_user():
+    user_email = session.get('user_email')
+    if not user_email or user_email.lower() != ADMIN_EMAIL.lower():
+        return jsonify({'success': False}), 403
+        
+    data = request.json
+    target_email = data.get('email')
+    
+    db = get_db()
+    db.execute("UPDATE users SET approved = 1 WHERE email = ?", (target_email,))
+    db.commit()
+    return jsonify({'success': True})
+
+# --- API PUBLIQUE (Accueil) ---
+
+@app.route('/api/users/active', methods=['GET'])
+def get_active_users():
+    db = get_db()
+    # Ne récupère que les profils validés
+    cursor = db.execute("SELECT email, bio, photos, city FROM users WHERE approved = 1")
+    users = []
     for row in cursor.fetchall():
-        if row['invisible_active'] and row['email'] == session.get('user_email'):
-            continue
-        profiles.append(dict(row))
-    return jsonify(profiles)
+        u = dict(row)
+        try:
+            u['photos'] = json.loads(u['photos'])
+        except:
+            u['photos'] = []
+        users.append(u)
+        
+    return jsonify({'success': True, 'users': users})
+
+# --- API MESSAGERIE ---
+
+@app.route('/api/chat/messages', methods=['GET'])
+def get_messages():
+    user_email = session.get('user_email')
+    other_user = request.args.get('user')
+    
+    if not user_email or not other_user:
+        return jsonify({'success': False}), 400
+        
+    db = get_db()
+    cursor = db.execute('''
+        SELECT sender_email as sender, receiver_email as receiver, content, timestamp 
+        FROM messages 
+        WHERE (sender_email = ? AND receiver_email = ?) 
+           OR (sender_email = ? AND receiver_email = ?)
+        ORDER BY timestamp ASC
+    ''', (user_email, other_user, other_user, user_email))
+    
+    messages = [dict(row) for row in cursor.fetchall()]
+    return jsonify({'success': True, 'messages': messages})
+
+@app.route('/api/chat/send', methods=['POST'])
+def send_message():
+    sender_email = session.get('user_email')
+    if not sender_email:
+        return jsonify({'success': False}), 401
+        
+    data = request.json
+    receiver_email = data.get('receiver')
+    content = data.get('content')
+    timestamp = int(time.time())
+    
+    if receiver_email and content:
+        db = get_db()
+        db.execute('INSERT INTO messages (sender_email, receiver_email, content, timestamp) VALUES (?, ?, ?, ?)',
+                   (sender_email, receiver_email, content, timestamp))
+        db.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False}), 400
+
+# --- ABONNEMENTS (Conservés) ---
 
 @app.route('/api/paypal-success', methods=['POST'])
 def paypal_success():
@@ -154,16 +254,6 @@ def paypal_success():
     db.commit()
     return jsonify({'status': 'success'})
 
-@app.route('/api/cancel-subscription', methods=['POST'])
-def cancel_subscription():
-    user_email = session.get('user_email')
-    if not user_email:
-        return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
-    
-    db = get_db()
-    db.execute('UPDATE users SET sub_invisible = 0, sub_boost = 0, sub_albums = 0, sub_pack = 0, invisible_active = 0 WHERE email = ?', (user_email,))
-    db.commit()
-    return jsonify({'status': 'success'})
-
 if __name__ == '__main__':
+    # Lance le serveur sur le port 5000
     app.run(debug=True, port=5000)
