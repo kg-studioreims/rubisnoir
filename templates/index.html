@@ -214,6 +214,66 @@
             font-size: 0.8rem;
         }
 
+        /* Grille des profils sur l'accueil (3 col mobile, 4 col desktop) */
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .profiles-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 14px;
+            }
+        }
+
+        .profile-grid-card {
+            background: var(--surface-color);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-thumb {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            position: relative;
+        }
+
+        .profile-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-grid-info {
+            padding: 8px;
+        }
+
+        .profile-grid-info h4 {
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-grid-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
         nav.bottom-nav {
             position: fixed;
             bottom: 0;
@@ -282,13 +342,6 @@
             justify-content: space-between;
             gap: 12px;
             border: 1px solid var(--border-color);
-            cursor: pointer;
-        }
-
-        .profile-card.pending-verification {
-            opacity: 0.65;
-            filter: grayscale(30%);
-            border-color: #f39c12;
         }
 
         .profile-info {
@@ -357,11 +410,11 @@
             font-size: 0.9rem;
         }
 
-        #report-modal {
+        #report-modal, #photo-preview-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 2000;
             justify-content: center;
             align-items: center;
@@ -407,22 +460,42 @@
     </header>
 
     <main>
-        <!-- VUE ACCUEIL -->
+        <!-- VUE ACCUEIL (GRILLE DE PROFILS) -->
         <section id="view-home" class="view-section active">
-            <h2>Accueil & Profils</h2>
+            <h2>Mise en avant & Profils</h2>
             <div class="alert-box">
-                Rappel Charte Rubis Noir : Minimum 2 photos de visage obligatoires et validées par modération pour débloquer l'intégralité des interactions.
+                Charte Rubis Noir : Minimum 2 photos de visage obligatoires et validées par modération.
             </div>
 
-            <div class="profile-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'Passionné par l’univers Rubis Noir, premier contact pour échanger.')">
-                <div class="profile-info">
-                    <div class="avatar-placeholder">KG</div>
-                    <div>
+            <div class="profiles-grid">
+                <div class="profile-grid-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'Passionné par l’univers Rubis Noir.')">
+                    <div class="profile-thumb">KG</div>
+                    <div class="profile-grid-info">
                         <h4>Membre Actif</h4>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary);">Reims — En ligne</p>
+                        <p>Reims</p>
                     </div>
                 </div>
-                <button class="btn-report" onclick="event.stopPropagation(); openReportModal('Membre Actif')">Signaler</button>
+            </div>
+        </section>
+
+        <!-- VUE MON PROFIL -->
+        <section id="view-my-profile" class="view-section">
+            <h2>Mon Profil</h2>
+            <div style="background:var(--surface-color); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
+                    <div class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;">MO</div>
+                    <div>
+                        <h3 style="font-size:1.2rem;">Mon Compte</h3>
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">Gérez vos informations et vos photos</p>
+                    </div>
+                </div>
+                <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px;">Vos 2 photos de visage (en attente ou validées) :</p>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <div style="width:70px; height:70px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:var(--text-secondary);">Photo 1</div>
+                    <div style="width:70px; height:70px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:var(--text-secondary);">Photo 2</div>
+                </div>
+                <button class="btn-action" style="width:100%;">Mettre à jour mes photos</button>
             </div>
         </section>
 
@@ -443,7 +516,8 @@
                 <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
                 <h4 style="font-size:0.95rem; margin-bottom:8px;">À propos</h4>
                 <p id="detail-bio" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.4;">Description du membre...</p>
-                <button class="btn-action" style="width:100%;" onclick="startChatFromProfile()">Envoyer un message</button>
+                <button class="btn-action" style="width:100%; margin-bottom:10px;" onclick="startChatFromProfile()">Envoyer un message</button>
+                <button class="btn-report" style="width:100%; text-align:center;" onclick="openReportModal(document.getElementById('detail-name').innerText)">Signaler ce profil</button>
             </div>
         </section>
 
@@ -505,7 +579,7 @@
             </div>
         </section>
 
-        <!-- VUE VISITEURS -->
+        <!-- VUE VISITEURS (Sans signalement) -->
         <section id="view-visitors" class="view-section">
             <h2>Visiteurs récents</h2>
             <div class="profile-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'A consulté votre profil récemment.')">
@@ -516,7 +590,6 @@
                         <p style="font-size: 0.8rem; color: var(--text-secondary);">A consulté votre profil</p>
                     </div>
                 </div>
-                <button class="btn-report" onclick="event.stopPropagation(); openReportModal('Membre Actif')">Signaler</button>
             </div>
         </section>
 
@@ -524,11 +597,11 @@
         <section id="view-messages" class="view-section">
             <h2>Messagerie</h2>
             <div id="conversations-list">
-                <div class="profile-card" onclick="openChat('Discussion en cours')">
+                <div class="profile-card" onclick="openChat('Membre Actif')">
                     <div class="profile-info">
-                        <div class="avatar-placeholder">M1</div>
+                        <div class="avatar-placeholder">MA</div>
                         <div>
-                            <h4>Discussion en cours</h4>
+                            <h4>Membre Actif</h4>
                             <p style="font-size: 0.8rem; color: var(--text-secondary);">Dernier message reçu...</p>
                         </div>
                     </div>
@@ -539,9 +612,12 @@
 
         <!-- VUE DETAIL DISCUSSION -->
         <section id="chat-detail-view" class="view-section" style="display:none; flex-direction:column; height: calc(100vh - 120px);">
-            <div class="back-bar" onclick="closeChat()">
-                <svg style="width:20px;height:20px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                <span id="chat-title-header">Discussion</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div class="back-bar" style="margin-bottom: 0;" onclick="closeChat()">
+                    <svg style="width:20px;height:20px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    <span id="chat-title-header">Discussion</span>
+                </div>
+                <button class="btn-report" onclick="openReportModal(document.getElementById('chat-title-header').innerText)">Signaler</button>
             </div>
             <div class="chat-messages" id="chat-messages-box">
                 <div class="message-bubble">Bonjour, bienvenue sur Rubis Noir.</div>
@@ -560,56 +636,52 @@
         <section id="view-developer" class="view-section">
             <h2>Espace Modération (Développeur)</h2>
             <div class="alert-box">
-                Panneau administrateur : validez les photos de visage des nouveaux inscrits (ou refusez les paysages/photos non conformes) et examinez les médias envoyés en conversation.
+                Panneau administrateur : validez les photos de visage et examinez les signalements avec accès direct à la conversation.
             </div>
 
             <!-- SECTION 1 : NOUVEAUX COMPTES EN ATTENTE DE VALIDATION PHOTO -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Inscriptions en attente de validation photo</h3>
             <div id="pending-profiles-container" style="margin-bottom: 24px;">
-                <div class="profile-card pending-verification" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 10px; border-color: #f39c12;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="profile-info">
                             <div class="avatar-placeholder">NEW</div>
                             <div>
                                 <h4>Nouveau Membre</h4>
-                                <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation (Photos de visage requises)</p>
+                                <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Aperçu des photos soumises à l'inscription -->
+                    <!-- Aperçu cliquable des photos -->
                     <div style="display: flex; gap: 8px; background: var(--bg-color); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
-                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">Photo 1</div>
-                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary);">Photo 2</div>
-                        <span style="font-size: 0.8rem; color: var(--text-secondary); align-self: center; margin-left: 8px;">Vérifier s'il s'agit bien de visages identifiables.</span>
+                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary); cursor: pointer;" onclick="openPhotoModal('Photo 1 - Nouveau Membre')">Photo 1</div>
+                        <div style="width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--text-secondary); cursor: pointer;" onclick="openPhotoModal('Photo 2 - Nouveau Membre')">Photo 2</div>
+                        <span style="font-size: 0.8rem; color: var(--text-secondary); align-self: center; margin-left: 8px;">Cliquez pour agrandir.</span>
                     </div>
                     <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                        <button class="btn-report" onclick="rejectAccountPhotos(this)">Refuser (Paysage/Invalide)</button>
+                        <button class="btn-report" onclick="rejectAccountPhotos(this)">Refuser</button>
                         <button class="btn-action" onclick="approveAccountPhotos(this)">Valider le profil</button>
                     </div>
                 </div>
             </div>
 
-            <!-- SECTION 2 : SIGNALEMENTS ET MÉDIAS ENVOYÉS EN CONVERSATION -->
-            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Signalements & Médias de conversation</h3>
+            <!-- SECTION 2 : SIGNALEMENTS & ACCÈS CONVERSATION -->
+            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Signalements & Conversations</h3>
             <div id="reports-list-container">
                 <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="profile-info">
                             <div class="avatar-placeholder" style="background: #e50914;">!</div>
                             <div>
-                                <h4>Signalement : Média / Message</h4>
-                                <p style="font-size: 0.8rem; color: var(--text-secondary);">Motif : Contenu bizarre ou non consenti</p>
+                                <h4>Signalement : Membre Actif</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary);">Motif : Média bizarre en conversation</p>
                             </div>
                         </div>
-                        <span style="font-size: 0.75rem; background: #333; padding: 4px 8px; border-radius: 4px;">En attente</span>
                     </div>
                     
-                    <div style="background: var(--bg-color); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">Média incriminé en conversation :</p>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <div style="width: 50px; height: 50px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-secondary);">Média</div>
-                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Image ou vidéo suspecte partagée en message</span>
-                        </div>
+                    <div style="background: var(--bg-color); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.8rem; color: var(--text-secondary);">Vérifier l'historique des échanges :</span>
+                        <button class="btn-action" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openChat('Membre Actif')">Ouvrir la conversation</button>
                     </div>
 
                     <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -650,6 +722,17 @@
         </section>
     </main>
 
+    <!-- MODAL AGRANDISSEMENT PHOTO -->
+    <div id="photo-preview-modal">
+        <div class="modal-content" style="text-align: center;">
+            <h3 id="photo-modal-title" style="margin-bottom: 12px; color: #f39c12;">Aperçu Photo</h3>
+            <div style="width: 100%; height: 250px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 16px;">
+                [Photo HD / Visage]
+            </div>
+            <button onclick="closePhotoModal()" class="btn-action" style="width: 100%;">Fermer</button>
+        </div>
+    </div>
+
     <!-- MODAL DE SIGNALEMENT UTILISATEUR -->
     <div id="report-modal">
         <div class="modal-content">
@@ -679,6 +762,10 @@
             Messages
             <span id="badge-messages" class="badge-dot"></span>
         </button>
+        <button class="nav-item" onclick="switchView('my-profile', this)" title="Mon Profil">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Profil
+        </button>
         <button class="nav-item" onclick="switchView('developer', this)" title="Espace Développeur & Modération">
             <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
             Bouclier
@@ -693,7 +780,6 @@
     <script>
         const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
 
-        // Demande d'autorisation pour les vraies notifications du système
         if (window.Notification && Notification.permission !== "granted") {
             Notification.requestPermission();
         }
@@ -767,6 +853,7 @@
             document.getElementById('chat-detail-view').style.display = 'flex';
             
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            // Index de l'onglet messages dans la barre de nav
             document.querySelectorAll('.nav-item')[2].classList.add('active');
             clearBadge('badge-messages');
         }
@@ -821,25 +908,20 @@
                 box.appendChild(bubble);
                 box.scrollTop = box.scrollHeight;
 
-                // Notification système pour signaler qu'un média a été posté (contrôlable)
                 triggerRealNotification("Rubis Noir - Modération", "Un nouveau média a été envoyé en conversation.");
             }
         }
 
-        // Actions de validation de compte (Photos de visage)
         function approveAccountPhotos(btn) {
             const card = btn.closest('.profile-card');
             card.remove();
-            // Ici le profil passe en ligne officiellement
         }
 
         function rejectAccountPhotos(btn) {
             const card = btn.closest('.profile-card');
             card.remove();
-            // Ici le compte est rejeté / invité à refaire ses photos de visage
         }
 
-        // Actions de modération (Signalements & Médias)
         function ignoreReport(btn) {
             const card = btn.closest('.profile-card');
             card.remove();
@@ -848,6 +930,15 @@
         function banReportedUser(btn) {
             const card = btn.closest('.profile-card');
             card.remove();
+        }
+
+        function openPhotoModal(title) {
+            document.getElementById('photo-modal-title').innerText = title;
+            document.getElementById('photo-preview-modal').style.display = 'flex';
+        }
+
+        function closePhotoModal() {
+            document.getElementById('photo-preview-modal').style.display = 'none';
         }
 
         function handleCredentialResponse(response) {
@@ -875,9 +966,7 @@
 
         function submitReport() {
             const reason = document.getElementById('report-reason').value;
-            if(!reason.trim()) {
-                return;
-            }
+            if(!reason.trim()) return;
             closeReportModal();
             triggerRealNotification("Rubis Noir - Modération", "Un utilisateur a envoyé un signalement.");
         }
