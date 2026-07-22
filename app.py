@@ -1,82 +1,79 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import sqlite3
 import os
+import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, g
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+DATABASE = 'rubis_noir.db'
 
-# Email de l'administrateur
-ADMIN_EMAIL = "kg.studio.reims@gmail.com"
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+    return db
 
-# Fonction pour initialiser la base de données (profils et abonnements détaillés)
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
 def init_db():
-    conn = sqlite3.connect('rubisnoir.db')
-    cursor = conn.cursor()
-    
-    # Table des profils utilisateurs avec gestion séparée des options d'abonnement
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS profiles (
-            email TEXT PRIMARY KEY,
-            pseudo TEXT NOT NULL,
-            city TEXT DEFAULT 'Reims',
-            bio TEXT DEFAULT 'Membre de la communauté Rubis Noir.',
-            photos_json TEXT DEFAULT '[]',
-            sub_invisible INTEGER DEFAULT 0,
-            sub_mise_en_avant INTEGER DEFAULT 0,
-            sub_albums_prives INTEGER DEFAULT 0,
-            sub_pack_complet INTEGER DEFAULT 0,
-            sub_expiration TEXT DEFAULT ''
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+    with app.app_context():
+        db = get_db()
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                email TEXT PRIMARY KEY,
+                pseudo TEXT,
+                bio TEXT,
+                city TEXT,
+                photos TEXT,
+                albums TEXT,
+                sub_invisible INTEGER DEFAULT 0,
+                sub_boost INTEGER DEFAULT 0,
+                sub_albums INTEGER DEFAULT 0,
+                sub_pack INTEGER DEFAULT 0,
+                invisible_active INTEGER DEFAULT 0
+            )
+        ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS visitors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                profile_email TEXT,
+                visitor_email TEXT,
+                visitor_pseudo TEXT,
+                visitor_photo TEXT,
+                timestamp INTEGER
+            )
+        ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_email TEXT,
+                receiver_email TEXT,
+                content TEXT,
+                timestamp INTEGER
+            )
+        ''')
+        db.commit()
 
-# Initialisation au lancement
 init_db()
 
 @app.route('/')
 def index():
-    conn = sqlite3.connect('rubisnoir.db')
-    cursor = conn.cursor()
-    
-    # Récupérer tous les profils inscrits et leurs statuts d'abonnement pour le front
-    cursor.execute('''
-        SELECT email, pseudo, city, bio, photos_json, 
-               sub_invisible, sub_mise_en_avant, sub_albums_prives, sub_pack_complet, sub_expiration 
-        FROM profiles
-    ''')
-    profiles_rows = cursor.fetchall()
-    conn.close()
-    
-    # Formatage des profils pour le front
-    profiles = []
-    for row in profiles_rows:
-        profiles.append({
-            'email': row[0],
-            'pseudo': row[1],
-            'city': row[2],
-            'bio': row[3],
-            'photos': row[4],
-            'sub_invisible': row[5],
-            'sub_mise_en_avant': row[6],
-            'sub_albums_prives': row[7],
-            'sub_pack_complet': row[8],
-            'sub_expiration': row[9]
-        })
-
     user_email = session.get('user_email')
-    is_admin = (user_email == ADMIN_EMAIL)
-    
-    # Récupérer les infos de l'utilisateur connecté s'il existe
-    current_user_data = None
+    user_data = None
     if user_email:
-        for p in profiles:
-            if p['email'] == user_email:
-                current_user_data = p
-                break
-
-    return render_template('index.html', profiles=profiles, user=session.get('user_name'), user_data=current_user_data, is_admin=is_admin)
+        db = get_db()
+        cursor = db.execute('SELECT * FROM users WHERE email = ?', (user_email,))
+        row = cursor.fetchone()
+        if row:
+            user_data = dict(row)
+    
+    # Vérification admin (par exemple ton email ou un flag)
+    is_admin = (user_email == 'admin@rubisnoir.fr')
+    return render_template('index.html', user=user_email, user_data=user_data, is_admin=is_admin)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -84,58 +81,81 @@ def login():
     name = request.form.get('name')
     if email:
         session['user_email'] = email
-        session['user_name'] = name
-        
-        # Vérifier si le profil existe déjà, sinon le créer par défaut
-        conn = sqlite3.connect('rubisnoir.db')
-        cursor = conn.cursor()
-        cursor.execute('SELECT email FROM profiles WHERE email = ?', (email,))
+        db = get_db()
+        cursor = db.execute('SELECT * FROM users WHERE email = ?', (email,))
         if not cursor.fetchone():
-            cursor.execute('''
-                INSERT INTO profiles (email, pseudo, city, bio, photos_json, sub_invisible, sub_mise_en_avant, sub_albums_prives, sub_pack_complet) 
-                VALUES (?, ?, ?, ?, ?, 0, 0, 0, 0)
-            ''', (email, name, 'Reims', 'Membre de la communauté Rubis Noir.', '[]'))
-            conn.commit()
-        conn.close()
-        
+            db.execute('INSERT INTO users (email, pseudo, bio, city, photos, albums) VALUES (?, ?, ?, ?, ?, ?)',
+                       (email, name, 'Membre de la communauté Rubis Noir.', 'Reims', '[]', '[]'))
+            db.commit()
     return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    session.clear()
+    session.pop('user_email', None)
     return redirect(url_for('index'))
+
+@app.route('/api/profile', methods=['GET', 'POST'])
+def handle_profile():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
+    
+    db = get_db()
+    if request.method == 'POST':
+        data = request.json
+        db.execute('''
+            UPDATE users SET pseudo = ?, bio = ?, city = ?, photos = ?, albums = ?, invisible_active = ?
+            WHERE email = ?
+        ''', (
+            data.get('pseudo'),
+            data.get('bio'),
+            data.get('city'),
+            str(data.get('photos', [])),
+            str(data.get('albums', [])),
+            1 if data.get('invisible_active') else 0,
+            user_email
+        ))
+        db.commit()
+        return jsonify({'status': 'success'})
+    
+    cursor = db.execute('SELECT * FROM users WHERE email = ?', (user_email,))
+    row = cursor.fetchone()
+    return jsonify(dict(row) if row else {})
+
+@app.route('/api/profiles', methods=['GET'])
+def get_all_profiles():
+    db = get_db()
+    cursor = db.execute('SELECT email, pseudo, bio, city, photos, invisible_active FROM users')
+    profiles = []
+    for row in cursor.fetchall():
+        if row['invisible_active'] and row['email'] == session.get('user_email'):
+            continue
+        profiles.append(dict(row))
+    return jsonify(profiles)
 
 @app.route('/api/verify-payment', methods=['POST'])
 def verify_payment():
-    data = request.get_json() or {}
-    plan_type = data.get('plan')
-    payer_email = session.get('user_email')
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
     
-    if not payer_email:
-        return jsonify({'status': 'error', 'message': 'Utilisateur non connecté'}), 403
-        
-    conn = sqlite3.connect('rubisnoir.db')
-    cursor = conn.cursor()
+    data = request.json
+    plan = data.get('plan')
+    db = get_db()
     
-    # Logique d'activation selon le pack choisi pour éviter les cumuls illogiques
-    if plan_type == 'pack_complet':
-        # Le pack à 4,99 € active tout et invalide la gestion séparée
-        cursor.execute('''
-            UPDATE profiles 
-            SET sub_pack_complet = 1, sub_invisible = 1, sub_mise_en_avant = 1, sub_albums_prives = 1 
-            WHERE email = ?
-        ''', (payer_email,))
-    elif plan_type == 'invisible':
-        cursor.execute('UPDATE profiles SET sub_invisible = 1 WHERE email = ?', (payer_email,))
-    elif plan_type == 'mise_en_avant':
-        cursor.execute('UPDATE profiles SET sub_mise_en_avant = 1 WHERE email = ?', (payer_email,))
-    elif plan_type == 'albums_prives':
-        cursor.execute('UPDATE profiles SET sub_albums_prives = 1 WHERE email = ?', (payer_email,))
-        
-    conn.commit()
-    conn.close()
+    if plan == 'invisible':
+        db.execute('UPDATE users SET sub_invisible = 1 WHERE email = ?', (user_email,))
+    elif plan == 'albums_prives':
+        db.execute('UPDATE users SET sub_albums = 1 WHERE email = ?', (user_email,))
+    elif plan == 'mise_en_avant':
+        db.execute('UPDATE users SET sub_boost = 1 WHERE email = ?', (user_email,))
+    elif plan == 'pack_complet':
+        db.execute('UPDATE users SET sub_pack = 1, sub_invisible = 1, sub_albums = 1, sub_boost = 1 WHERE email = ?', (user_email,))
+    elif plan == 'cancel':
+        db.execute('UPDATE users SET sub_invisible = 0, sub_boost = 0, sub_albums = 0, sub_pack = 0, invisible_active = 0 WHERE email = ?', (user_email,))
     
-    return jsonify({'status': 'success', 'message': 'Abonnement activé avec succès'})
+    db.commit()
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
