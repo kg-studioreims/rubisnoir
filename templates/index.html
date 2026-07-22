@@ -9,6 +9,7 @@
     <title>Rubis Noir</title>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jwt-decode/3.1.2/jwt-decode.min.js"></script>
     <style>
         :root {
             --bg-color: #121212;
@@ -528,7 +529,7 @@
             </div>
         </section>
 
-        <!-- VUE ABONNEMENTS / PAYPAL (Intégrée aux Paramètres/Pass) -->
+        <!-- VUE ABONNEMENTS / PAYPAL -->
         <section id="view-subs" class="view-section">
             <div class="back-bar" onclick="switchView('settings', document.querySelectorAll('.nav-item')[3])">
                 <svg style="width:20px;height:20px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -590,7 +591,7 @@
             </div>
         </section>
 
-        <!-- VUE VISITEURS (Grille de profils) -->
+        <!-- VUE VISITEURS -->
         <section id="view-visitors" class="view-section">
             <h2>Visiteurs récents</h2>
             <div class="profiles-grid">
@@ -650,7 +651,7 @@
                 Panneau administrateur complet : gestion des profils, bios, validations de 5 photos max, et modération des médias envoyés en conversation.
             </div>
 
-            <!-- SECTION 1 : MODÉRATION DES BIOS UTILISATEURS -->
+            <!-- SECTION 1 : MODÉRATION DES BIOS -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Contrôle des Descriptions (Bios)</h3>
             <div class="profile-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -717,7 +718,7 @@
                 <div class="g_id_signin" data-type="standard"></div>
             </div>
             <div id="user-session-box" style="display:none; margin-bottom: 20px;">
-                <p style="margin-bottom: 10px; font-size: 0.9rem; color: #4cd137;">● Connecté avec succès</p>
+                <p id="logged-user-email" style="margin-bottom: 10px; font-size: 0.9rem; color: #4cd137;">● Connecté</p>
                 <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d;" onclick="logoutUser()">Se déconnecter</button>
             </div>
             
@@ -789,6 +790,7 @@
         const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
         let myPhotos = [];
         let isDeveloper = false;
+        const ADMIN_EMAIL = "kg.studio.reims@gmail.com";
 
         if (window.Notification && Notification.permission !== "granted") {
             Notification.requestPermission();
@@ -846,9 +848,10 @@
             document.getElementById('detail-bio').innerText = bio;
             document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
             
-            // Si c'est le compte admin, masquer le bouton bloquer
             const blockBtn = document.getElementById('block-user-btn');
             if (isDeveloper) {
+                blockBtn.style.display = 'none'; // Le développeur ne bloque pas, il a l'immunité
+            } else {
                 blockBtn.style.display = 'block';
             }
             document.getElementById('profile-detail-view').style.display = 'block';
@@ -990,23 +993,41 @@
         }
 
         function handleCredentialResponse(response) {
-            isDeveloper = true;
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('user-session-box').style.display = 'block';
-            
-            // Ajouter l'onglet Bouclier Admin pour le développeur s'il n'y est pas
-            const nav = document.getElementById('main-bottom-nav');
-            if (!document.getElementById('nav-shield-btn')) {
-                const shieldBtn = document.createElement('button');
-                shieldBtn.id = 'nav-shield-btn';
-                shieldBtn.className = 'nav-item';
-                shieldBtn.onclick = function() { switchView('developer', this); clearBadge('badge-shield'); };
-                shieldBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                    Bouclier
-                    <span id="badge-shield" class="badge-dot" style="display: block;"></span>
-                `;
-                nav.appendChild(shieldBtn);
+            try {
+                const data = jwt_decode(response.credential);
+                const userEmail = data.email;
+
+                if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    isDeveloper = true;
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('logged-user-email').innerText = `● Connecté (Admin/Dev : ${userEmail})`;
+                    document.getElementById('user-session-box').style.display = 'block';
+                    
+                    const nav = document.getElementById('main-bottom-nav');
+                    if (!document.getElementById('nav-shield-btn')) {
+                        const shieldBtn = document.createElement('button');
+                        shieldBtn.id = 'nav-shield-btn';
+                        shieldBtn.className = 'nav-item';
+                        shieldBtn.onclick = function() { switchView('developer', this); clearBadge('badge-shield'); };
+                        shieldBtn.innerHTML = `
+                            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                            Bouclier
+                            <span id="badge-shield" class="badge-dot" style="display: block;"></span>
+                        `;
+                        nav.appendChild(shieldBtn);
+                    }
+                } else {
+                    isDeveloper = false;
+                    document.getElementById('auth-container').style.display = 'none';
+                    document.getElementById('logged-user-email').innerText = `● Connecté (${userEmail})`;
+                    document.getElementById('user-session-box').style.display = 'block';
+                    
+                    const shieldBtn = document.getElementById('nav-shield-btn');
+                    if (shieldBtn) shieldBtn.remove();
+                    switchView('home', document.querySelector('.nav-item'));
+                }
+            } catch (e) {
+                console.error("Erreur de décodage du token Google", e);
             }
         }
 
