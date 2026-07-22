@@ -270,52 +270,53 @@
                 <h3>Abonnement & Options Rubis</h3>
                 <button class="close-btn" onclick="closeModal('modal-subscription')">✕</button>
             </div>
+            
+            <!-- SECTION NON ABONNÉ / ACHAT À LA CARTE -->
             <div class="search-body" id="sub-content-unsubscribed" style="display: flex; flex-direction: column; gap: 14px;">
                 <p style="color: #ccc; font-size: 0.85rem; text-align: center; margin: 0;">
                     Sélectionne une option à l'unité ou débloque tout avec le Pass Complet.
                 </p>
 
-                <!-- Grille d'offres -->
-                <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 10px;" id="options-list-container">
                     
                     <!-- Option 1: Mode Invisible -->
-                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="sub-card-option" id="card-option-invisible" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">👁️ Mode Invisible</h4>
                             <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Navigue discrètement sans apparaître dans les listes.</p>
                         </div>
                         <div style="text-align: right; min-width: 90px;">
                             <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
-                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Mode Invisible', 1.99)">Activer</button>
+                            <button class="search-action-btn" id="btn-buy-invisible" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('invisible', 'Mode Invisible', 1.99)">Activer</button>
                         </div>
                     </div>
 
                     <!-- Option 2: Albums Privés -->
-                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="sub-card-option" id="card-option-albums" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">🔒 Albums Privés</h4>
                             <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Débloque jusqu'à 5 albums photo verrouillés.</p>
                         </div>
                         <div style="text-align: right; min-width: 90px;">
                             <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
-                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Albums Privés', 1.99)">Activer</button>
+                            <button class="search-action-btn" id="btn-buy-albums" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('albums_prives', 'Albums Privés', 1.99)">Activer</button>
                         </div>
                     </div>
 
                     <!-- Option 3: Mise en avant -->
-                    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="sub-card-option" id="card-option-boost" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 style="margin: 0; color: #fff; font-size: 0.95rem;">✨ Mise en avant</h4>
                             <p style="margin: 2px 0 0 0; color: #888; font-size: 0.75rem;">Apparais en priorité dans la section Profils du moment.</p>
                         </div>
                         <div style="text-align: right; min-width: 90px;">
                             <span style="color: #e50914; font-weight: bold; font-size: 0.9rem;">1,99 €</span><span style="color: #666; font-size: 0.7rem;">/mois</span>
-                            <button class="search-action-btn" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('Mise en avant', 1.99)">Activer</button>
+                            <button class="search-action-btn" id="btn-buy-boost" style="padding: 4px 8px; font-size: 0.75rem; margin-top: 4px;" onclick="processOptionCheckout('mise_en_avant', 'Mise en avant', 1.99)">Activer</button>
                         </div>
                     </div>
 
                     <!-- Option 4: Pack Complet (Mise en avant visuelle) -->
-                    <div style="background: linear-gradient(135deg, #2b0608 0%, #1a1a1a 100%); border: 1.5px solid #e50914; border-radius: 8px; padding: 14px; text-align: center; margin-top: 5px;">
+                    <div id="card-option-pack" style="background: linear-gradient(135deg, #2b0608 0%, #1a1a1a 100%); border: 1.5px solid #e50914; border-radius: 8px; padding: 14px; text-align: center; margin-top: 5px;">
                         <span style="background: #e50914; color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">Meilleure offre</span>
                         <h3 style="margin: 6px 0 2px 0; color: #fff; font-size: 1.1rem;">💎 Pass Complet Rubis</h3>
                         <p style="margin: 0 0 10px 0; color: #aaa; font-size: 0.75rem;">Inclut le Mode Invisible + Albums Privés + Mise en Avant !</p>
@@ -330,14 +331,25 @@
                 </div>
             </div>
             
-            <div class="search-body" id="sub-content-subscribed" style="display: none;">
-                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre accès Rubis est actif</p>
-                <label class="toggle-label">
+            <!-- SECTION DÉJÀ ABONNÉ / GESTION DE L'ABONNEMENT -->
+            <div class="search-body" id="sub-content-subscribed" style="display: none; flex-direction: column; gap: 12px;">
+                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre abonnement Rubis est actif</p>
+                
+                <div id="active-subscriptions-summary" style="background: #1a1a1a; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 0.85rem; color: #ccc;">
+                    <!-- Rempli dynamiquement par JS selon les options possédées -->
+                </div>
+
+                <label class="toggle-label" style="margin-top: 5px;">
                     <span>Mode invisible (masquer mon profil)</span>
                     <input type="checkbox" id="toggle-invisible">
                 </label>
+                
                 <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="openEditProfile()">🔒 Gérer mes albums privés</button>
-                <button class="search-action-btn" onclick="closeModal('modal-subscription')">Fermer</button>
+                
+                <!-- Bouton de résiliation de l'abonnement -->
+                <button class="search-action-btn" style="background-color: #331111; border: 1px solid #e50914; color: #ff6b6b; margin-top: 10px;" onclick="cancelUserSubscription()">Résilier mon abonnement (fin d'échéance)</button>
+                
+                <button class="search-action-btn" style="margin-top: 5px;" onclick="closeModal('modal-subscription')">Fermer</button>
             </div>
         </div>
     </div>
@@ -418,7 +430,14 @@
 
     <!-- Script application -->
     <script>
-        let isSubscribed = false;
+        // États des abonnements de l'utilisateur connecté
+        let userSubs = {
+            invisible: 0,
+            mise_en_avant: 0,
+            albums_prives: 0,
+            pack_complet: 0
+        };
+
         let userPhotos = [];
         let privateAlbums = [];
         let searchTimeout = null;
@@ -541,10 +560,11 @@
         }
 
         function createNewPrivateAlbum() {
-            const maxAlbums = isSubscribed ? 5 : 1;
+            // Si pack complet ou albums privés actifs -> jusqu'à 5 albums, sinon 1
+            const maxAlbums = (userSubs.pack_complet === 1 || userSubs.albums_prives === 1) ? 5 : 1;
             if (privateAlbums.length >= maxAlbums) {
-                alert(isSubscribed ? "Limite de 5 albums atteinte." : "Comptes gratuits limités à 1 album privé.");
-                if (!isSubscribed) openSubscription();
+                alert(maxAlbums === 5 ? "Limite de 5 albums atteinte." : "Comptes gratuits limités à 1 album privé. Activez l'option Albums Privés ou le Pass Complet pour en créer d'autres.");
+                if (maxAlbums === 1) openSubscription();
                 return;
             }
             const albumName = prompt("Nom de l'album privé :", `Album ${privateAlbums.length + 1}`);
@@ -556,7 +576,7 @@
         function renderPrivateAlbumsUI() {
             const container = document.getElementById('private-albums-container');
             const quotaLabel = document.getElementById('album-quota-label');
-            const maxAlbums = isSubscribed ? 5 : 1;
+            const maxAlbums = (userSubs.pack_complet === 1 || userSubs.albums_prives === 1) ? 5 : 1;
            
             quotaLabel.innerText = `${privateAlbums.length} / ${maxAlbums} album${maxAlbums > 1 ? 's' : ''}`;
             container.innerHTML = '';
@@ -799,25 +819,76 @@
             renderPrivateAlbumsUI();
             document.getElementById('modal-edit-profile').style.display = 'flex';
         }
+
         function openSubscription() {
             closeSettings();
-            document.getElementById('sub-content-unsubscribed').style.display = isSubscribed ? 'none' : 'flex';
-            document.getElementById('sub-content-subscribed').style.display = isSubscribed ? 'flex' : 'none';
+            updateSubscriptionUI();
             document.getElementById('modal-subscription').style.display = 'flex';
         }
 
-        function processOptionCheckout(optionName, price) {
+        // Met à jour dynamiquement l'affichage de la modale d'abonnement selon les packs actifs
+        function updateSubscriptionUI() {
+            const hasAnySub = (userSubs.pack_complet === 1 || userSubs.invisible === 1 || userSubs.mise_en_avant === 1 || userSubs.albums_prives === 1);
+            
+            const unsubContainer = document.getElementById('sub-content-unsubscribed');
+            const subContainer = document.getElementById('sub-content-subscribed');
+
+            if (!hasAnySub) {
+                unsubContainer.style.display = 'flex';
+                subContainer.style.display = 'none';
+                
+                // Afficher toutes les cartes individuelles
+                document.getElementById('card-option-invisible').style.display = 'flex';
+                document.getElementById('card-option-albums').style.display = 'flex';
+                document.getElementById('card-option-boost').style.display = 'flex';
+                document.getElementById('card-option-pack').style.display = 'block';
+            } else {
+                // Si le Pass Complet est actif, ou si l'utilisateur gère ses options
+                if (userSubs.pack_complet === 1) {
+                    // Masquer les petits packs car le pack complet englobe tout
+                    document.getElementById('card-option-invisible').style.display = 'none';
+                    document.getElementById('card-option-albums').style.display = 'none';
+                    document.getElementById('card-option-boost').style.display = 'none';
+                    document.getElementById('card-option-pack').style.display = 'none';
+                } else {
+                    // Masquer les options déjà achetées à l'unité
+                    document.getElementById('card-option-invisible').style.display = userSubs.invisible === 1 ? 'none' : 'flex';
+                    document.getElementById('card-option-albums').style.display = userSubs.albums_prives === 1 ? 'none' : 'flex';
+                    document.getElementById('card-option-boost').style.display = userSubs.mise_en_avant === 1 ? 'none' : 'flex';
+                }
+
+                unsubContainer.style.display = 'flex';
+                subContainer.style.display = 'flex';
+
+                // Générer le résumé des options actives
+                let summaryHtml = '<ul style="margin: 0; padding-left: 15px;">';
+                if (userSubs.pack_complet === 1) {
+                    summaryHtml += '<li><strong>Pass Complet Rubis</strong> (Inclut toutes les options)</li>';
+                } else {
+                    if (userSubs.invisible === 1) summaryHtml += '<li>Mode Invisible actif</li>';
+                    if (userSubs.albums_prives === 1) summaryHtml += '<li>Albums Privés actifs (5 max)</li>';
+                    if (userSubs.mise_en_avant === 1) summaryHtml += '<li>Mise en avant active</li>';
+                }
+                summaryHtml += '</ul>';
+                document.getElementById('active-subscriptions-summary').innerHTML = summaryHtml;
+            }
+        }
+
+        function processOptionCheckout(planKey, optionName, price) {
             fetch('/api/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan: optionName })
+                body: JSON.stringify({ plan: planKey })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    isSubscribed = true;
+                    if (planKey === 'invisible') userSubs.invisible = 1;
+                    if (planKey === 'albums_prives') userSubs.albums_prives = 1;
+                    if (planKey === 'mise_en_avant') userSubs.mise_en_avant = 1;
+
                     alert(`Paiement de ${price} € validé pour l'option : ${optionName} !`);
-                    openSubscription();
+                    updateSubscriptionUI();
                     renderPrivateAlbumsUI();
                 } else {
                     alert("Erreur lors de la validation : " + data.message);
@@ -833,14 +904,18 @@
             fetch('/api/verify-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan: 'Pass Complet Rubis' })
+                body: JSON.stringify({ plan: 'pack_complet' })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    isSubscribed = true;
+                    userSubs.pack_complet = 1;
+                    userSubs.invisible = 1;
+                    userSubs.mise_en_avant = 1;
+                    userSubs.albums_prives = 1;
+
                     alert("Paiement de 4,99 € validé pour le Pass Complet via Google Play !");
-                    openSubscription();
+                    updateSubscriptionUI();
                     renderPrivateAlbumsUI();
                 } else {
                     alert("Erreur lors de la validation : " + data.message);
@@ -850,6 +925,23 @@
                 console.error('Erreur:', err);
                 alert("Erreur de communication avec le serveur.");
             });
+        }
+
+        function cancelUserSubscription() {
+            if (confirm("Voulez-vous résilier votre abonnement ? Vos options resteront actives jusqu'à la fin de la période mensuelle en cours.")) {
+                fetch('/api/verify-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan: 'cancel' })
+                })
+                .then(() => {
+                    userSubs = { invisible: 0, mise_en_avant: 0, albums_prives: 0, pack_complet: 0 };
+                    alert("Votre abonnement a été résilié pour la prochaine échéance.");
+                    updateSubscriptionUI();
+                    renderPrivateAlbumsUI();
+                })
+                .catch(() => alert("Erreur lors de la demande de résiliation."));
+            }
         }
 
         function openPrivacy() { closeSettings(); document.getElementById('modal-privacy').style.display = 'flex'; }
