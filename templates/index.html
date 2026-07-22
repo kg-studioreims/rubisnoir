@@ -903,9 +903,19 @@
                             switchView('home', document.querySelector('.nav-item'));
                             initPublicDataListeners();
                         } else {
-                            isProfileApproved = false;
-                            switchView('pending', null);
-                        }
+                isProfileApproved = false;
+                // Si l'utilisateur n'existe pas encore dans la base, on crée sa fiche automatiquement
+                if (!userData) {
+                    db.ref('users/' + safeEmailKey).set({
+                        email: currentUserEmail,
+                        approved: false,
+                        createdAt: Date.now()
+                    });
+                }
+                document.getElementById('main-header').style.display = 'none';
+                document.getElementById('main-bottom-nav').style.display = 'none';
+                switchView('pending', null);
+            }
                     });
                 }
             } catch (e) {
