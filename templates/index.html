@@ -771,6 +771,11 @@
             Messages
             <span id="badge-messages" class="badge-dot"></span>
         </button>
+        <button id="nav-shield-btn" class="nav-item" onclick="switchView('developer', this); clearBadge('badge-shield')">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            Bouclier
+            <span id="badge-shield" class="badge-dot"></span>
+        </button>
         <button class="nav-item" onclick="switchView('my-profile', this)" title="Mon Profil">
             <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             Profil
@@ -996,27 +1001,9 @@
                 if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     isDeveloper = true;
                     bioInput.value = "Créateur de l'application Rubis Noir.";
-                    
-                    const nav = document.getElementById('main-bottom-nav');
-                    if (!document.getElementById('nav-shield-btn')) {
-                        const shieldBtn = document.createElement('button');
-                        shieldBtn.id = 'nav-shield-btn';
-                        shieldBtn.className = 'nav-item';
-                        shieldBtn.onclick = function() { switchView('developer', this); clearBadge('badge-shield'); };
-                        shieldBtn.innerHTML = `
-                            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                            Bouclier
-                            <span id="badge-shield" class="badge-dot" style="display: block;"></span>
-                        `;
-                        nav.appendChild(shieldBtn);
-                    }
                 } else {
                     isDeveloper = false;
                     bioInput.value = "";
-                    
-                    const shieldBtn = document.getElementById('nav-shield-btn');
-                    if (shieldBtn) shieldBtn.remove();
-                    switchView('home', document.querySelector('.nav-item'));
                 }
             } catch (e) {
                 console.error("Erreur de décodage du token Google", e);
@@ -1028,8 +1015,6 @@
             document.getElementById('my-bio-input').value = "";
             document.getElementById('user-session-box').style.display = 'none';
             document.getElementById('auth-container').style.display = 'block';
-            const shieldBtn = document.getElementById('nav-shield-btn');
-            if (shieldBtn) shieldBtn.remove();
             switchView('home', document.querySelector('.nav-item'));
         }
 
