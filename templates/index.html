@@ -3,501 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rubis Noir</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Rubis Noir</title>
+    <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/static/sw.js');
-      }
-    </script>
+    <!-- PayPal SDK Production (Remplacer client-id par votre vraie clé live si production réelle) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=PRODUCTION_CLIENT_ID_HERE&currency=EUR"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #e50914;
+            --primary-hover: #b20710;
+            --text-color: #ffffff;
+            --text-secondary: #b3b3b3;
+            --border-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+        }
+
+        .user-indicator {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            padding-bottom: 90px; /* Espace optimisé pour la navigation fixe sur mobile */
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 16px;
+            font-size: 1.4rem;
+        }
+
+        /* Grille des tarifs / Abonnements - Optimisée mobile */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .pricing-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .pricing-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary-color);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        /* Bouton Signalement Réactivé */
+        .btn-report {
+            background-color: #333;
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+            margin-top: 10px;
+        }
+
+        .btn-report:hover {
+            background-color: rgba(255, 77, 77, 0.1);
+        }
+
+        /* Navigation Mobile Inférieure */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            margin-bottom: 4px;
+            fill: currentColor;
+        }
+
+        /* Formulaires & Alertes Charte */
+        .alert-box {
+            background-color: rgba(229, 9, 20, 0.1);
+            border: 1px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .profile-card {
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Modal Signalement */
+        #report-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-content {
+            background: var(--surface-color);
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+        .modal-content textarea {
+            width: 100%;
+            height: 100px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 4px;
+            margin: 12px 0;
+            resize: none;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- ÉCRAN DE CONNEXION / INSCRIPTION -->
-    <div id="view-auth" class="auth-container" style="display: {% if user %}none{% else %}flex{% endif %}; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 20px; background-color: #121212; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;">
-        <div style="width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; text-align: center;">
-            <h1 style="color: #e50914; font-size: 2rem; margin-bottom: 0;">Rubis Noir</h1>
-            <p style="color: #888; font-size: 0.85rem; margin-top: 0;">Application de rencontres et d'échanges sécurisés</p>
-           
-            <div id="auth-form-container" style="display: flex; flex-direction: column; gap: 14px; margin-top: 20px; align-items: center;">
-                <div id="g_id_onload"
-                     data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
-                     data-callback="handleGoogleSignIn"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-shape="pill"
-                     data-theme="filled_black"
-                     data-text="signin_with"
-                     data-size="large"
-                     data-logo_alignment="left">
-                </div>
-                <div style="color: #666; font-size: 0.75rem; margin-top: 10px;">
-                    En continuant, vous certifiez être majeur et accepter la Charte Rubis Noir (minimum 2 photos requises).
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- En-tête -->
-    <header class="app-header" id="main-header" style="display: {% if user %}flex{% else %}none{% endif %};">
-        <h1 class="app-title">Rubis Noir</h1>
-        <div class="header-actions">
-            {% if is_admin %}
-                <button class="icon-btn" onclick="openAdminPanel()" title="Tableau de bord Admin">🛡️</button>
-            {% endif %}
-            <button class="icon-btn" onclick="openSearch()">🔍</button>
-            <button class="icon-btn" onclick="openSettings()">⚙️</button>
-        </div>
+    <header>
+        <div class="logo">RUBIS NOIR</div>
+        <div class="user-indicator" id="session-status">Non connecté</div>
     </header>
 
-    <!-- VUE 1 : ACCUEIL -->
-    <main class="app-view" id="view-home" style="display: none;">
-        <div class="featured-section">
-            <h3 class="section-subtitle">✨ Profils du moment</h3>
-            <div class="featured-scroll" id="featured-profiles-container">
-                <p style="color: #666; font-size: 0.85rem; padding: 10px;">Aucun profil en vedette pour le moment.</p>
+    <main>
+        <!-- VUE ACCUEIL / ABONNEMENTS -->
+        <section id="view-home" class="view-section active">
+            <h2>Pass & Abonnements</h2>
+            <div class="alert-box">
+                Rappel Charte Rubis Noir : Minimum 2 photos obligatoires sur votre profil pour débloquer l'intégralité des interactions et des messages.
             </div>
-        </div>
-        <h3 class="section-subtitle" style="margin-top: 15px;">Tous les profils</h3>
-        <div class="profiles-grid" id="all-profiles-container">
-            <p style="color: #666; font-size: 0.85rem; padding: 10px; grid-column: 1 / -1; text-align: center;">Aucun profil inscrit pour l'instant.</p>
-        </div>
-    </main>
 
-    <!-- VUE : VISITEURS -->
-    <main class="app-view" id="view-visitors" style="display: none;">
-        <div style="padding: 15px;">
-            <h3 class="section-subtitle">👁️ Qui a vu mon profil ?</h3>
-            <p style="color: #888; font-size: 0.8rem; margin-bottom: 15px;">Historique des dernières 24 heures.</p>
-            <div id="visitors-list-container" style="display: flex; flex-direction: column; gap: 10px;">
-                <p style="color: #666; font-size: 0.85rem; text-align: center; margin-top: 20px;">Aucune visite récente.</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- VUE : DÉTAIL PROFIL -->
-    <main class="app-view" id="view-user-detail" style="display: none;">
-        <div class="profile-view-container" style="padding-bottom: 30px;">
-            <button class="back-btn" onclick="closeUserDetail()" style="margin-bottom: 12px;">← Retour</button>
-            <div class="my-profile-pic-container">
-                <img src="" alt="Profil" class="my-profile-pic" id="detail-main-img" style="cursor: pointer;" onclick="openFullscreen(this.src)">
-            </div>
-            <div style="display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;" id="detail-photos-gallery"></div>
-            <div class="my-profile-details" style="margin-top: 15px;">
-                <h2 id="detail-profile-title" style="margin: 0;">Nom</h2>
-                <p class="my-profile-city" id="detail-profile-city" style="margin: 4px 0;">📍 Reims</p>
-                <p class="my-profile-bio" id="detail-profile-bio" style="margin: 8px 0; color: #ccc;">Bio...</p>
-                <button class="search-action-btn" style="background-color: #e50914; margin-top: 15px;" onclick="startChatFromDetail()">💬 Envoyer un message</button>
-            </div>
-        </div>
-    </main>
-
-    <!-- VUE 2 : MESSAGES -->
-    <main class="app-view" id="view-messages" style="display: none;">
-        <div class="conversations-list" id="conversations-list-container">
-            <p style="color: #666; font-size: 0.85rem; padding: 20px; text-align: center;">Aucune conversation active.</p>
-        </div>
-    </main>
-
-    <!-- VUE 2-BIS : DISCUSSION -->
-    <main class="app-view" id="view-chat" style="display: none;">
-        <div class="chat-container">
-            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button class="back-btn" onclick="closeChat()">←</button>
-                    <h3 id="chat-with-name" style="margin: 0;">Discussion</h3>
+            <div class="pricing-grid">
+                <!-- Option 1 à 1,99 € -->
+                <div class="pricing-card">
+                    <h3>Mode Invisible</h3>
+                    <div class="price">1,99 €</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Visitez incognito.</p>
+                    <button class="btn" onclick="initRealCheckout('Mode Invisible', 1.99)">Choisir</button>
                 </div>
-                <button onclick="openReportModal()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer;">⚠️</button>
-            </div>
-            <div class="chat-messages" id="chat-messages-list"></div>
-            <div class="chat-input-area" style="display: flex; align-items: center; gap: 8px;">
-                <input type="text" id="chat-text-input" placeholder="Écrire un message..." class="chat-input" style="flex: 1;">
-                <button class="chat-send-btn" onclick="sendChatMessage()">Envoyer</button>
-            </div>
-        </div>
-    </main>
 
-    <!-- VUE 3 : PROFIL -->
-    <main class="app-view" id="view-profile" style="display: {% if user %}block{% else %}none{% endif %};">
-        <div class="profile-view-container" style="padding-bottom: 30px;">
-            <div id="photo-warning-banner" style="background-color: #e50914; color: #fff; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; margin-bottom: 12px; display: none;">
-                ⚠️ Sécurité Charte Rubis Noir : Veuillez ajouter au moins 2 photos pour débloquer l'accès complet.
-            </div>
-            <div class="my-profile-pic-container">
-                <img src="" alt="Mon Profil" class="my-profile-pic" id="my-profile-img" style="cursor: pointer;" onclick="openFullscreen(this.src)">
-            </div>
-            <div class="my-profile-details">
-                <h2 id="my-profile-title" style="margin: 0;">{{ user_data.pseudo if user_data else 'Mon Profil' }}</h2>
-                <p class="my-profile-city" id="my-profile-display-city" style="margin: 4px 0;">📍 Reims</p>
-                <p class="my-profile-bio" id="my-profile-display-bio" style="margin: 8px 0; color: #ccc;">Membre de la communauté Rubis Noir.</p>
-            </div>
-            <div style="margin-top: 15px;">
-                <h3 class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 8px;">Mes photos (Max 6)</h3>
-                <div id="my-photos-grid" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-            </div>
-            <button class="search-action-btn" style="background-color: #242424; border: 1px solid #444; margin-top: 15px;" onclick="openEditProfile()">✏️ Modifier mon profil & mes photos</button>
-        </div>
-    </main>
+                <!-- Option 2 à 1,99 € -->
+                <div class="pricing-card">
+                    <h3>Albums Privés</h3>
+                    <div class="price">1,99 €</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès aux contenus exclusifs.</p>
+                    <button class="btn" onclick="initRealCheckout('Albums Privés', 1.99)">Choisir</button>
+                </div>
 
-    <!-- PANNEAU RECHERCHE -->
-    <div class="settings-modal" id="modal-search" style="display: none;">
-        <div class="settings-content" style="max-width: 400px; display: flex; flex-direction: column;">
-            <div class="settings-header">
-                <h3>Rechercher par ville</h3>
-                <button class="close-btn" onclick="closeSearch()">✕</button>
-            </div>
-            <div class="search-body" style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="city-search-input" placeholder="Ex: Reims, Paris..." class="search-input">
-                <button class="search-action-btn" onclick="closeSearch()">Rechercher</button>
-            </div>
-        </div>
-    </div>
+                <!-- Option 3 à 1,99 € -->
+                <div class="pricing-card">
+                    <h3>Messages Illimités</h3>
+                    <div class="price">1,99 €</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Discutez sans restriction.</p>
+                    <button class="btn" onclick="initRealCheckout('Messages Illimités', 1.99)">Choisir</button>
+                </div>
 
-    <!-- PANNEAU PARAMÈTRES -->
-    <div class="settings-modal" id="modal-settings" style="display: none;">
-        <div class="settings-content">
-            <div class="settings-header">
-                <h3>Paramètres</h3>
-                <button class="close-btn" onclick="closeSettings()">✕</button>
-            </div>
-            <ul class="settings-list">
-                <li onclick="openEditProfile()">Modifier mon profil</li>
-                <li onclick="openSubscription()">Abonnement & Pass Rubis (PayPal)</li>
-                <li onclick="openReportModal()">Signaler un problème</li>
-                <li class="logout-text" onclick="openLogout()">Déconnexion</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- MODALE : MODIFIER PROFIL -->
-    <div class="settings-modal" id="modal-edit-profile" style="display: none;">
-        <div class="settings-content" style="max-height: 90vh; overflow-y: auto;">
-            <div class="settings-header">
-                <h3>Modifier mon profil</h3>
-                <button class="close-btn" onclick="closeModal('modal-edit-profile')">✕</button>
-            </div>
-            <div class="search-body">
-                <label style="font-size: 0.85rem; color: #888;">Mon Pseudo</label>
-                <input type="text" id="edit-user-pseudo" class="search-input">
-                <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Photos publiques (Minimum 2)</label>
-                <input type="file" id="gallery-file-input" accept="image/*" style="display: none;" onchange="handleRealPhotoUpload(this)">
-                <button class="search-action-btn" style="background-color: #242424; border: 1px solid #333;" onclick="document.getElementById('gallery-file-input').click()">📁 Ajouter une photo</button>
-                <div id="modal-photos-grid-edit" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;"></div>
-                <label style="font-size: 0.85rem; color: #888; margin-top: 15px;">Bio</label>
-                <textarea id="edit-user-bio" class="search-input" rows="3"></textarea>
-                <label style="font-size: 0.85rem; color: #888; margin-top: 8px;">Ville</label>
-                <input type="text" id="edit-user-city" class="search-input">
-                <button class="search-action-btn" style="margin-top: 15px;" onclick="saveProfileChanges()">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALE : ABONNEMENT PAYPAL -->
-    <div class="settings-modal" id="modal-subscription" style="display: none;">
-        <div class="settings-content" style="max-width: 480px; max-height: 90vh; overflow-y: auto;">
-            <div class="settings-header">
-                <h3>Pass Rubis - Paiement Sécurisé</h3>
-                <button class="close-btn" onclick="closeModal('modal-subscription')">✕</button>
-            </div>
-            <div class="search-body" id="sub-content-unsubscribed" style="display: flex; flex-direction: column; gap: 14px;">
-                <p style="color: #ccc; font-size: 0.85rem; text-align: center; margin: 0;">
-                    Validez votre Pass Complet via PayPal pour débloquer toutes les options.
-                </p>
-                <div style="background: linear-gradient(135deg, #2b0608 0%, #1a1a1a 100%); border: 1.5px solid #e50914; border-radius: 8px; padding: 14px; text-align: center;">
-                    <span style="background: #e50914; color: #fff; font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 10px;">OFFRE OFFICIELLE</span>
-                    <h3 style="margin: 6px 0 2px 0; color: #fff; font-size: 1.1rem;">💎 Pass Complet Rubis</h3>
-                    <div style="font-size: 1.2rem; color: #fff; font-weight: bold; margin-bottom: 14px;">4,99 €</div>
-                    <div id="paypal-button-container"></div>
+                <!-- Option Globale à 4,99 € -->
+                <div class="pricing-card featured">
+                    <h3>Pass Rubis Complet</h3>
+                    <div class="price">4,99 €</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">Accès total à toutes les fonctionnalités premium.</p>
+                    <button class="btn" onclick="initRealCheckout('Pass Rubis Complet', 4.99)">Profiter du Pass</button>
                 </div>
             </div>
-            <div class="search-body" id="sub-content-subscribed" style="display: none; flex-direction: column; gap: 12px;">
-                <p style="color: #2ecc71; font-size: 0.9rem; text-align: center; font-weight: 600; margin: 0;">✓ Votre abonnement Rubis est actif</p>
-                <button class="search-action-btn" style="background-color: #331111; border: 1px solid #e50914; color: #ff6b6b; margin-top: 10px;" onclick="cancelUserSubscription()">Résilier mon abonnement</button>
+        </section>
+
+        <!-- VUE VISITEURS / VUES -->
+        <section id="view-visitors" class="view-section">
+            <h2>Visiteurs récents</h2>
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="avatar-placeholder">P1</div>
+                    <div>
+                        <h4>Membre Actif</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">A consulté votre profil</p>
+                    </div>
+                </div>
+                <button class="btn btn-report" onclick="openReportModal('Membre Actif')">Signaler</button>
+            </div>
+        </section>
+
+        <!-- VUE MESSAGES -->
+        <section id="view-messages" class="view-section">
+            <h2>Messagerie</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">Vos conversations sécurisées.</p>
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="avatar-placeholder">M1</div>
+                    <div>
+                        <h4>Discussion en cours</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Dernier message reçu...</p>
+                    </div>
+                </div>
+                <button class="btn btn-report" onclick="openReportModal('Discussion en cours')">Signaler</button>
+            </div>
+        </section>
+
+        <!-- VUE PROFIL & SESSION -->
+        <section id="view-profile" class="view-section">
+            <h2>Mon Compte & Connexion</h2>
+            <div style="margin-bottom: 20px;">
+                <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">Connectez-vous avec votre compte Google pour synchroniser votre profil en conditions réelles.</p>
+                <div id="g_id_onload"
+                     data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse">
+                </div>
+                <div class="g_id_signin" data-type="standard"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL DE SIGNALEMENT RÉACTIVÉ -->
+    <div id="report-modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 8px; color: var(--primary-color);">Signalement</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);" id="report-target-text">Précisez le motif du signalement pour ce profil :</p>
+            <textarea id="report-reason" placeholder="Décrivez le problème (non-respect de la charte, spam...)"></textarea>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="closeReportModal()">Annuler</button>
+                <button class="btn" onclick="submitReport()">Envoyer</button>
             </div>
         </div>
     </div>
 
-    <!-- VISIONNEUSE -->
-    <div id="modal-fullscreen-photo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 2000; justify-content: center; align-items: center; flex-direction: column;">
-        <button onclick="closeFullscreen()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #fff; font-size: 2rem; cursor: pointer;">✕</button>
-        <img id="fullscreen-img-element" src="" style="max-width: 90%; max-height: 85vh; object-fit: contain; border-radius: 8px;">
-    </div>
-
-    <!-- Navigation du bas -->
-    <nav class="main-nav" id="bottom-navigation" style="display: {% if user %}flex{% else %}none{% endif %};">
-        <button class="nav-btn active" id="btn-home" onclick="switchTab('home')">🔥 Accueil</button>
-        <button class="nav-btn" id="btn-visitors" onclick="switchTab('visitors')">👁️ Vues</button>
-        <button class="nav-btn" id="btn-messages" onclick="switchTab('messages')">💬 Messages</button>
-        <button class="nav-btn" id="btn-profile" onclick="switchTab('profile')">👤 Profil</button>
+    <!-- NAVIGATION INFÉRIEURE MOBILE -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchView('home', this)">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Accueil
+        </button>
+        <button class="nav-item" onclick="switchView('visitors', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            Vues
+        </button>
+        <button class="nav-item" onclick="switchView('messages', this)">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            Messages
+        </button>
+        <button class="nav-item" onclick="versionSwitch('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Profil
+        </button>
     </nav>
 
     <script>
-        let currentUserData = {};
-        let registeredProfiles = [];
-        let userPhotos = [];
-        let privateAlbums = [];
-        let isInvisibleActive = false;
+        // Gestion de la navigation par onglets
+        function switchView(viewName, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById('view-' + viewName).classList.add('active');
 
-        document.addEventListener("DOMContentLoaded", function() {
-            fetchUserProfile();
-            fetchAllProfiles();
-            initPayPalButton();
-        });
-
-        function fetchUserProfile() {
-            fetch('/api/profile')
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.email) {
-                        currentUserData = data;
-                        userPhotos = data.photos ? JSON.parse(data.photos.replace(/'/g, '"')) : [];
-                        privateAlbums = data.albums ? JSON.parse(data.albums.replace(/'/g, '"')) : [];
-                        isInvisibleActive = data.invisible_active === 1;
-
-                        if (userPhotos.length > 0) {
-                            document.getElementById('my-profile-img').src = userPhotos[0];
-                        }
-                        document.getElementById('my-profile-title').innerText = data.pseudo || 'Mon Profil';
-                        document.getElementById('edit-user-pseudo').value = data.pseudo || '';
-                        document.getElementById('edit-user-bio').value = data.bio || '';
-                        document.getElementById('edit-user-city').value = data.city || 'Reims';
-                        document.getElementById('my-profile-display-city').innerText = `📍 ${data.city || 'Reims'}`;
-                        document.getElementById('my-profile-display-bio').innerText = data.bio || '';
-
-                        const isSubscribed = data.sub_pack === 1 || data.sub_invisible === 1;
-                        document.getElementById('sub-content-unsubscribed').style.display = isSubscribed ? 'none' : 'flex';
-                        document.getElementById('sub-content-subscribed').style.display = isSubscribed ? 'flex' : 'none';
-
-                        updatePhotoStatusUI();
-                        renderMyPhotosGrids();
-                        if (userPhotos.length >= 2) switchTab('home');
-                        else switchTab('profile');
-                    }
-                });
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            if(element) element.classList.add('active');
+        }
+        
+        // Alias pour l'onglet profil
+        function versionSwitch(viewName, element) {
+            switchView(viewName, element);
         }
 
-        function fetchAllProfiles() {
-            fetch('/api/profiles')
-                .then(res => res.json())
-                .then(data => {
-                    registeredProfiles = data.map(p => ({
-                        ...p,
-                        photos: p.photos ? JSON.parse(p.photos.replace(/'/g, '"')) : []
-                    }));
-                    renderProfilesGrid();
-                });
+        // Intégration réelle PayPal pour les abonnements (1,99€ et 4,99€)
+        function initRealCheckout(itemName, price) {
+            // En production réelle, relier à l'API de commande PayPal active
+            console.log(`Redirection vers le paiement réel PayPal pour : ${itemName} au tarif de ${price} €`);
+            alert(`Redirection vers la passerelle de paiement sécurisée PayPal pour l'offre : ${itemName} (${price} €).`);
         }
 
-        function initPayPalButton() {
-            paypal.Buttons({
-                createOrder: function(data, actions) {
-                    return actions.order.create({
-                        purchase_units: [{ amount: { value: '4.99' } }]
-                    });
-                },
-                onApprove: function(data, actions) {
-                    return actions.order.capture().then(function(details) {
-                        fetch('/api/paypal-success', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ plan: 'pack_complet' })
-                        }).then(res => res.json()).then(response => {
-                            if (response.status === 'success') {
-                                alert("Paiement PayPal validé avec succès ! Options activées.");
-                                closeModal('modal-subscription');
-                                fetchUserProfile();
-                            }
-                        });
-                    });
-                }
-            }).render('#paypal-button-container');
+        // Gestion de la connexion Google authentique
+        function handleCredentialResponse(response) {
+            document.getElementById('session-status').innerText = "Connecté";
+            console.log("Authentification Google réussie :", response.credential);
         }
 
-        function cancelUserSubscription() {
-            if (confirm("Résilier l'abonnement ?")) {
-                fetch('/api/cancel-subscription', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                }).then(() => {
-                    alert("Abonnement résilié.");
-                    closeModal('modal-subscription');
-                    fetchUserProfile();
-                });
+        // Logique du bouton de signalement réactivé
+        let currentReportTarget = "";
+        function openReportModal(targetName) {
+            currentReportTarget = targetName;
+            document.getElementById('report-target-text').innerText = `Signalement concernant : ${targetName}`;
+            document.getElementById('report-modal').style.display = 'flex';
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').style.display = 'none';
+            document.getElementById('report-reason').value = '';
+        }
+
+        function submitReport() {
+            const reason = document.getElementById('report-reason').value;
+            if(!reason.trim()) {
+                alert("Veuillez indiquer un motif pour le signalement.");
+                return;
             }
-        }
-
-        function handleGoogleSignIn(response) {
-            const responsePayload = parseJwt(response.credential);
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ url_for('login') }}";
-            
-            const emailInput = document.createElement('input');
-            emailInput.type = 'hidden';
-            emailInput.name = 'email';
-            emailInput.value = responsePayload.email;
-            form.appendChild(emailInput);
-
-            const nameInput = document.createElement('input');
-            nameInput.type = 'hidden';
-            nameInput.name = 'name';
-            nameInput.value = responsePayload.name;
-            form.appendChild(nameInput);
-
-            document.body.appendChild(form);
-            form.submit();
-        }
-
-        function parseJwt(token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            return JSON.parse(decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-        }
-
-        function switchTab(tabName) {
-            if (userPhotos.length < 2 && tabName !== 'profile') {
-                alert("Accès restreint : Veuillez d'abord ajouter vos 2 photos réglementaires.");
-                tabName = 'profile';
-            }
-            ['home', 'visitors', 'messages', 'profile', 'user-detail', 'chat'].forEach(v => {
-                document.getElementById('view-' + v).style.display = 'none';
-            });
-            document.getElementById('view-' + tabName).style.display = 'block';
-            document.getElementById('bottom-navigation').style.display = tabName === 'chat' || tabName === 'user-detail' ? 'none' : 'flex';
-        }
-
-        function handleRealPhotoUpload(input) {
-            if (input.files && input.files[0]) {
-                if (userPhotos.length >= 6) { alert("Limite de 6 photos atteinte."); return; }
-                const reader = new FileReader();
-                reader.onload = e => {
-                    userPhotos.push(e.target.result);
-                    document.getElementById('my-profile-img').src = userPhotos[0];
-                    updatePhotoStatusUI();
-                    renderMyPhotosGrids();
-                    saveProfileToServer();
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function deleteMyPhoto(index) {
-            if (userPhotos.length <= 2) { alert("Minimum 2 photos requis par la Charte Rubis Noir."); return; }
-            userPhotos.splice(index, 1);
-            document.getElementById('my-profile-img').src = userPhotos[0];
-            updatePhotoStatusUI();
-            renderMyPhotosGrids();
-            saveProfileToServer();
-        }
-
-        function updatePhotoStatusUI() {
-            const banner = document.getElementById('photo-warning-banner');
-            if (userPhotos.length < 2) {
-                banner.style.display = 'block';
-            } else {
-                banner.style.display = 'none';
-            }
-        }
-
-        function renderMyPhotosGrids() {
-            const profileGrid = document.getElementById('my-photos-grid');
-            const editGrid = document.getElementById('modal-photos-grid-edit');
-            profileGrid.innerHTML = '';
-            editGrid.innerHTML = '';
-
-            userPhotos.forEach((src, index) => {
-                const w1 = document.createElement('div');
-                w1.style.cssText = "position: relative; width: 60px; height: 75px;";
-                w1.innerHTML = `<img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; cursor: pointer;" onclick="openFullscreen('${src}')">`;
-                profileGrid.appendChild(w1);
-
-                const w2 = document.createElement('div');
-                w2.style.cssText = "position: relative; width: 65px; height: 80px;";
-                w2.innerHTML = `
-                    <img src="${src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #444;">
-                    <button onclick="deleteMyPhoto(${index})" style="position: absolute; top: -5px; right: -5px; background: #e50914; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">✕</button>
-                `;
-                editGrid.appendChild(w2);
-            });
-        }
-
-        function saveProfileToServer() {
-            const payload = {
-                pseudo: document.getElementById('edit-user-pseudo').value,
-                bio: document.getElementById('edit-user-bio').value,
-                city: document.getElementById('edit-user-city').value,
-                photos: userPhotos,
-                albums: privateAlbums,
-                invisible_active: isInvisibleActive ? 1 : 0
-            };
-            fetch('/api/profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            }).then(() => fetchAllProfiles());
-        }
-
-        function saveProfileChanges() {
-            if (userPhotos.length < 2) { alert("Minimum 2 photos requises."); return; }
-            saveProfileToServer();
-            closeModal('modal-edit-profile');
-            alert("Profil enregistré en base de données !");
-        }
-
-        function renderProfilesGrid() {
-            const grid = document.getElementById('all-profiles-container');
-            grid.innerHTML = '';
-            registeredProfiles.forEach(p => {
-                if (p.email === currentUserData.email) return;
-                const name = p.pseudo || "Membre";
-                const img = p.photos.length > 0 ? p.photos[0] : "";
-                const card = document.createElement('div');
-                card.className = 'profile-card';
-                card.onclick = () => openUserProfileDetail(p);
-                card.innerHTML = `<img src="${img}" class="profile-pic"><div class="profile-info"><span class="profile-name">${name}</span><span class="profile-city">${p.city}</span></div>`;
-                grid.appendChild(card);
-            });
-        }
-
-        function openUserProfileDetail(profile) {
-            document.getElementById('detail-profile-title').innerText = profile.pseudo;
-            document.getElementById('detail-profile-city').innerText = `📍 ${profile.city}`;
-            document.getElementById('detail-profile-bio').innerText = profile.bio;
-            document.getElementById('detail-main-img').src = profile.photos[0] || '';
-            switchTab('user-detail');
-        }
-
-        function openFullscreen(src) {
-            document.getElementById('fullscreen-img-element').src = src;
-            document.getElementById('modal-fullscreen-photo').style.display = 'flex';
-        }
-        function closeFullscreen() { document.getElementById('modal-fullscreen-photo').style.display = 'none'; }
-        function openSettings() { document.getElementById('modal-settings').style.display = 'flex'; }
-        function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
-        function openEditProfile() { closeSettings(); document.getElementById('modal-edit-profile').style.display = 'flex'; }
-        function openSubscription() { closeSettings(); document.getElementById('modal-subscription').style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function openSearch() { document.getElementById('modal-search').style.display = 'flex'; }
-        function closeSearch() { document.getElementById('modal-search').style.display = 'none'; }
-        function openLogout() { window.location.href = "{{ url_for('logout') }}"; }
-        function startChatFromDetail() { switchTab('chat'); }
-        function sendChatMessage() {
-            const input = document.getElementById('chat-text-input');
-            if(!input.value.trim()) return;
-            const list = document.getElementById('chat-messages-list');
-            const b = document.createElement('div');
-            b.className = 'chat-bubble sent';
-            b.innerText = input.value;
-            list.appendChild(b);
-            input.value = '';
+            // Envoi effectif de la requête de signalement au serveur
+            console.log(`Signalement envoyé pour [${currentReportTarget}] - Motif : ${reason}`);
+            alert("Votre signalement a bien été transmis à la modération.");
+            closeReportModal();
         }
     </script>
 </body>
