@@ -492,7 +492,7 @@
                 
                 <div style="margin-bottom:16px;">
                     <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:6px;">Modifier votre Bio :</label>
-                    <textarea id="my-bio-input" style="width:100%; height:70px; background:var(--bg-color); border:1px solid var(--border-color); color:var(--text-color); padding:8px; border-radius:4px; font-size:0.85rem; resize:none;">Créateur de l'application Rubis Noir.</textarea>
+                    <textarea id="my-bio-input" style="width:100%; height:70px; background:var(--bg-color); border:1px solid var(--border-color); color:var(--text-color); padding:8px; border-radius:4px; font-size:0.85rem; resize:none;"></textarea>
                 </div>
 
                 <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:10px;">Vos photos (jusqu'à 5) :</p>
@@ -609,16 +609,7 @@
         <section id="view-messages" class="view-section">
             <h2>Messagerie</h2>
             <div id="conversations-list">
-                <div class="profile-card" onclick="openChat('Membre Actif')">
-                    <div class="profile-info">
-                        <div class="avatar-placeholder">MA</div>
-                        <div>
-                            <h4>Membre Actif</h4>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary);">Dernier message reçu...</p>
-                        </div>
-                    </div>
-                    <button class="btn-report" onclick="event.stopPropagation(); deleteConversation(this)">Supprimer</button>
-                </div>
+                <!-- Boîte de messages entièrement vide pour repartir de zéro -->
             </div>
         </section>
 
@@ -632,7 +623,7 @@
                 <button class="btn-report" onclick="openReportModal(document.getElementById('chat-title-header').innerText)">Signaler</button>
             </div>
             <div class="chat-messages" id="chat-messages-box">
-                <div class="message-bubble">Bonjour, bienvenue sur Rubis Noir.</div>
+                <!-- Zone de messages vide au départ -->
             </div>
             <div class="chat-input-bar">
                 <input type="file" id="media-file-input" accept="image/*,video/*" style="display:none;" onchange="handleMediaUpload(this)">
@@ -850,7 +841,7 @@
             
             const blockBtn = document.getElementById('block-user-btn');
             if (isDeveloper) {
-                blockBtn.style.display = 'none'; // Le développeur ne bloque pas, il a l'immunité
+                blockBtn.style.display = 'none';
             } else {
                 blockBtn.style.display = 'block';
             }
@@ -996,9 +987,11 @@
             try {
                 const data = jwt_decode(response.credential);
                 const userEmail = data.email;
+                const bioInput = document.getElementById('my-bio-input');
 
                 if (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     isDeveloper = true;
+                    bioInput.value = "Créateur de l'application Rubis Noir.";
                     document.getElementById('auth-container').style.display = 'none';
                     document.getElementById('logged-user-email').innerText = `● Connecté (Admin/Dev : ${userEmail})`;
                     document.getElementById('user-session-box').style.display = 'block';
@@ -1018,6 +1011,7 @@
                     }
                 } else {
                     isDeveloper = false;
+                    bioInput.value = "";
                     document.getElementById('auth-container').style.display = 'none';
                     document.getElementById('logged-user-email').innerText = `● Connecté (${userEmail})`;
                     document.getElementById('user-session-box').style.display = 'block';
@@ -1033,6 +1027,7 @@
 
         function logoutUser() {
             isDeveloper = false;
+            document.getElementById('my-bio-input').value = "";
             document.getElementById('user-session-box').style.display = 'none';
             document.getElementById('auth-container').style.display = 'block';
             const shieldBtn = document.getElementById('nav-shield-btn');
