@@ -71,7 +71,6 @@ def index():
         if row:
             user_data = dict(row)
     
-    # Vérification admin (par exemple ton email ou un flag)
     is_admin = (user_email == 'admin@rubisnoir.fr')
     return render_template('index.html', user=user_email, user_data=user_data, is_admin=is_admin)
 
@@ -133,14 +132,14 @@ def get_all_profiles():
         profiles.append(dict(row))
     return jsonify(profiles)
 
-@app.route('/api/verify-payment', methods=['POST'])
-def verify_payment():
+@app.route('/api/paypal-success', methods=['POST'])
+def paypal_success():
     user_email = session.get('user_email')
     if not user_email:
         return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
     
     data = request.json
-    plan = data.get('plan')
+    plan = data.get('plan', 'pack_complet')
     db = get_db()
     
     if plan == 'invisible':
@@ -149,11 +148,20 @@ def verify_payment():
         db.execute('UPDATE users SET sub_albums = 1 WHERE email = ?', (user_email,))
     elif plan == 'mise_en_avant':
         db.execute('UPDATE users SET sub_boost = 1 WHERE email = ?', (user_email,))
-    elif plan == 'pack_complet':
+    else:
         db.execute('UPDATE users SET sub_pack = 1, sub_invisible = 1, sub_albums = 1, sub_boost = 1 WHERE email = ?', (user_email,))
-    elif plan == 'cancel':
-        db.execute('UPDATE users SET sub_invisible = 0, sub_boost = 0, sub_albums = 0, sub_pack = 0, invisible_active = 0 WHERE email = ?', (user_email,))
     
+    db.commit()
+    return jsonify({'status': 'success'})
+
+@app.route('/api/cancel-subscription', methods=['POST'])
+def cancel_subscription():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'status': 'error', 'message': 'Non authentifié'}), 401
+    
+    db = get_db()
+    db.execute('UPDATE users SET sub_invisible = 0, sub_boost = 0, sub_albums = 0, sub_pack = 0, invisible_active = 0 WHERE email = ?', (user_email,))
     db.commit()
     return jsonify({'status': 'success'})
 
