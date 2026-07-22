@@ -3,160 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rubis Noir</title>
-    <!-- Script Google officiel -->
+    <title>Cercle Rubis — Rubis Noir</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #121212; color: white; padding-bottom: 70px; }
+        :root {
+            --bg-color: #0b0b0b;
+            --card-bg: #161616;
+            --accent-color: #d10000;
+            --text-color: #f1f1f1;
+            --text-muted: #888888;
+            --border-color: #2a2a2a;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Helvetica Neue", Arial, sans-serif;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+        }
+        h1, h2, h3 { margin: 0; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
         
-        /* PAGE DE CONNEXION INITIALE */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background-color: #0d0d0d; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
-        #login-screen h1 { color: #e60000; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        /* Grilles et profils */
+        .boosted-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            padding: 1rem;
+            cursor: pointer;
+        }
+        .profile-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+        }
         
-        /* APPLICATION PRINCIPALE (Masquée par défaut avant connexion) */
-        #main-app { display: none; }
+        /* Navigation basse */
+        nav.bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem 0;
+        }
+        .nav-item {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            background: none;
+            border: none;
+        }
+        .nav-item.active { color: var(--accent-color); font-weight: bold; }
 
-        /* HEADER SUPÉRIEUR */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: #1a1a1a; border-bottom: 1px solid #333; }
-        .logo { color: #e60000; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
-        
-        /* CONTENU DES SECTIONS */
-        .section { display: none; padding: 20px; }
-        .active-section { display: block; }
-        
-        /* BARRE DE NAVIGATION INFÉRIEURE */
-        nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1a1a1a; border-top: 1px solid #333; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        nav button { background: none; border: none; color: #aaa; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        nav button.active, nav button:hover { color: #e60000; }
-        nav span { font-size: 20px; margin-bottom: 3px; }
-
-        /* BOUTONS ET BLOCS PARAMÈTRES */
-        .btn-rouge { background-color: #e60000; color: white; border: none; padding: 12px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin: 10px 0; }
-        .btn-paypal { background-color: #ffc439; color: #003087; border: none; padding: 12px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; margin: 8px 0; }
-        .charte-box { border: 1px solid #e60000; padding: 15px; border-radius: 5px; margin-top: 15px; background-color: #1a0000; }
+        /* Boutons & Formulaires */
+        button, .btn {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+        .back-bar { cursor: pointer; margin-bottom: 1rem; color: var(--accent-color); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- 1. ÉCRAN DE CONNEXION (Visible au lancement) -->
-    <div id="login-screen">
-        <h1>Rubis Noir</h1>
-        <p style="color: #aaa; margin-bottom: 20px;">Veuillez vous connecter pour accéder à l'application.</p>
-        <div id="g_id_onload"
-             data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
-             data-context="signin"
-             data-ux_mode="popup"
-             data-callback="handleGoogleLogin">
+    <header>
+        <h2>Rubis Noir</h2>
         </div>
-        <div class="g_id_signin" data-type="standard" data-theme="filled_black"></div>
-    </div>
+    </header>
 
-    <!-- 2. APPLICATION PRINCIPALE -->
-    <div id="main-app">
-        <!-- HEADER -->
-        <header>
-            <input type="text" placeholder="Ville..." style="background:#222; border:1px solid #444; color:white; padding:5px 10px; border-radius:4px;">
-            <div class="logo">Rubis Noir</div>
-            <button onclick="showSection('parametres', null)" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">⚙️</button>
-        </header>
+    <div class="container" style="padding-bottom: 5rem;">
 
-        <!-- SECTION ACCUEIL -->
-        <div id="accueil" class="section active-section">
-            <h2>Accueil</h2>
-            <p>Flux principal...</p>
-        </div>
-
-        <!-- SECTION VUES -->
-        <div id="vues" class="section">
-            <h2>Vues</h2>
-            <p>Membres ayant consulté votre profil.</p>
-        </div>
-
-        <!-- SECTION MESSAGES -->
-        <div id="messages" class="section">
-            <h2>Messages</h2>
-            <p>Vos conversations...</p>
-        </div>
-
-        <!-- SECTION PROFIL -->
-        <div id="profil" class="section">
-            <h2>Mon Profil</h2>
-            <p>Gestion de vos photos et informations.</p>
-        </div>
-
-        <!-- SECTION PARAMÈTRES (Avec tous tes boutons fonctionnels) -->
-        <div id="parametres" class="section">
-            <h2>Paramètres & Compte</h2>
-            
-            <h3 style="margin-top: 20px; color: #e60000;">Abonnements</h3>
-            <button class="btn-paypal" onclick="alert Redirection PayPal 1">Abonnement 1 - PayPal</button>
-            <button class="btn-paypal" onclick="alert Redirection PayPal 2">Abonnement 2 - PayPal</button>
-            <button class="btn-paypal" onclick="alert Redirection PayPal 3">Abonnement 3 - PayPal</button>
-            <button class="btn-paypal" onclick="alert Redirection PayPal 4">Abonnement 4 - PayPal</button>
-
-            <div class="charte-box">
-                <h3 style="color: #e60000; margin-top:0;">Charte Rubis Noir & Règles d'usage</h3>
-                <ol style="padding-left: 20px; font-size: 14px; line-height: 1.6;">
-                    <li>Respect absolu d'autrui et bienveillance obligatoire.</li>
-                    <li>Interdiction stricte des contenus illégaux ou non consentis.</li>
-                    <li>Jusqu'à 5 photos de visage requises et validées par modération.</li>
-                    <li>Modération active et signalement disponible à tout moment.</li>
-                    <li>Protection des données personnelles et conformité RGPD.</li>
-                    <li>Utilisation exclusive des abonnements officiels sécurisés.</li>
-                </ol>
+        <!-- ÉCRAN D'ACCUEIL -->
+        <section id="view-home" class="view-section active">
+            <div id="pending-notice" style="display:none; background: #332200; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                ⚠️ Ton compte est en attente de validation par l'administrateur.
             </div>
 
-            <button class="btn-rouge" style="background-color: #ff4444; margin-top: 20px;" onclick="alert('Signalement général envoyé.')">🚨 Signalement général (Problème/Bug)</button>
-            <button class="btn-rouge" style="background-color: #444;" onclick="location.reload()">Déconnexion</button>
-        </div>
+            <!-- Profils du moment / mis en avant -->
+            <div class="boosted-section">
+                <h3>⭐ Profils en avant</h3>
+                <div id="boosted-grid" class="profiles-grid" style="margin-top: 1rem;">
+                    <!-- Injecté par JS -->
+                </div>
+            </div>
 
-        <!-- BARRE DE NAVIGATION INFÉRIEURE -->
-        <nav>
-            <button onclick="showSection('accueil', this)" class="active">
-                <span>🏠</span>Accueil
-            </button>
-            <button onclick="showSection('vues', this)">
-                <span>👁️</span>Vues
-            </button>
-            <button onclick="showSection('messages', this)">
-                <span>💬</span>Messages
-            </button>
-            <button onclick="showSection('profil', this)">
-                <span>👤</span>Profil
-            </button>
-        </nav>
+            <h3>Membres de la communauté</h3>
+            <div id="profiles-grid" class="profiles-grid" style="margin-top: 1rem;">
+                <!-- Injecté par JS -->
+            </div>
+        </section>
+
+        <!-- ÉCRAN MESSAGES -->
+        <section id="view-messages" class="view-section">
+            <h2>Messages</h2>
+            <div id="conversations-list" style="margin-top: 1rem;">
+                <!-- Liste des discussions -->
+            </div>
+        </section>
+
+        <!-- ÉCRAN DETAIL DISCUSSION -->
+        <section id="view-chat-detail" class="view-section">
+            <div class="back-bar" onclick="switchView('view-messages')">← Retour aux messages</div>
+            <h3 id="chat-with-title">Discussion</h3>
+            <div id="chat-messages" style="height: 300px; overflow-y: auto; background: var(--card-bg); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;"></div>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="chat-input" placeholder="Écris ton message..." style="margin-bottom: 0;">
+                <button onclick="sendMessage()">Envoyer</button>
+            </div>
+        </section>
+
+        <!-- ÉCRAN PROFIL / PARAMÈTRES -->
+        <section id="view-profile" class="view-section">
+            <h2>Mon Profil</h2>
+            <div style="margin-top: 1rem;">
+                <label>Pseudo :</label>
+                <input type="text" id="profile-pseudo">
+                <label>Bio :</label>
+                <textarea id="profile-bio"></textarea>
+                <button onclick="saveProfile()">Enregistrer</button>
+            </div>
+        </section>
+
+        <!-- ÉCRAN ABONNEMENTS / PAYPAL -->
+        <section id="view-subs" class="view-section">
+            <h2>Pass & Abonnements</h2>
+            <p>Soutiens le projet et débloque les avantages exclusifs.</p>
+            
+            <div style="margin-top: 2rem; background: var(--card-bg); padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 0.5rem; text-align: center;">
+                <h3>Pass Complet / Visibilité</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Passe en avant sur l'accueil et débloque toutes les options.</p>
+                <div style="margin-top: 1.5rem;">
+                  <style>.pp-DGE9FLKP4C7Q6{text-align:center;border:none;border-radius:0.25rem;min-width:11.625rem;padding:0 2rem;height:2.625rem;font-weight:bold;background-color:#FFD140;color:#000000;font-family:"Helvetica Neue",Arial,sans-serif;font-size:1rem;line-height:1.25rem;cursor:pointer;}</style>
+                  <form action="https://www.paypal.com/ncp/payment/DGE9FLKP4C7Q6" method="post" target="_blank" style="display:inline-grid;justify-items:center;align-content:start;gap:0.5rem;">
+                    <input class="pp-DGE9FLKP4C7Q6" type="submit" value="Acheter" />
+                    <img src="https://www.paypalobjects.com/images/Debit_Credit_APM.svg" alt="cards" />
+                    <section style="font-size: 0.75rem;">Optimisé par <img src="https://www.paypalobjects.com/paypal-ui/logos/svg/paypal-wordmark-color.svg" alt="paypal" style="height:0.875rem;vertical-align:middle;"/></section>
+                  </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÉCRAN DÉVELOPPEUR & MODÉRATION (ADMIN) -->
+        <section id="view-developer" class="view-section">
+            <h2>Espace Modération & Admin</h2>
+            <p style="color: var(--text-muted);">Validation des inscriptions et inspection des médias/conversations partagées.</p>
+            
+            <h3 style="margin-top: 1.5rem;">Inscriptions en attente</h3>
+            <div id="admin-pending-list" style="margin-top: 1rem;"></div>
+
+            <h3 style="margin-top: 2rem;">Conversations et médias récents (Supervision)</h3>
+            <div id="admin-messages-list" style="margin-top: 1rem; max-height: 300px; overflow-y: auto; background: var(--card-bg); padding: 1rem; border-radius: 0.5rem;"></div>
+        </section>
+
     </div>
 
+    <!-- NAVIGATION BASSE -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchView('view-home')">Accueil</button>
+        <button class="nav-item" onclick="switchView('view-messages')">Messages</button>
+        <button class="nav-item" onclick="switchView('view-profile')">Profil</button>
+        <button class="nav-item" onclick="switchView('view-subs')">Pass</button>
+        <button id="nav-admin-btn" class="nav-item" onclick="switchView('view-developer')" style="display:none;">Admin</button>
+    </nav>
+
     <script>
-        function showSection(sectionId, element) {
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active-section'));
-            document.getElementById(sectionId).classList.add('active-section');
+        let currentUser = null;
+        let activeChatUser = null;
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
             
-            if(element) {
-                document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-                element.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            if(viewId === 'view-home') loadProfiles();
+            if(viewId === 'view-developer') loadAdminData();
+        }            
+            let res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            });
+            let data = await res.json();
+            if(data.success) {
+                currentUser = data.user;
+                document.getElementById('auth-container').innerHTML = `<span>${currentUser.email}</span> <button onclick="logout()">Déco</button>`;
+                if(currentUser.is_admin) {
+                    document.getElementById('nav-admin-btn').style.display = 'block';
+                }
+                loadProfiles();
             }
         }
 
-        function handleGoogleLogin(response) {
-            fetch('/api/auth/google', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: response.credential })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    // Masque l'écran de connexion et affiche l'application
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
+        async function loadProfiles() {
+            let res = await fetch('/api/users/active');
+            let data = await res.json();
+            if(!data.success) return;
+
+            let grid = document.getElementById('profiles-grid');
+            let boostedGrid = document.getElementById('boosted-grid');
+            grid.innerHTML = '';
+            boostedGrid.innerHTML = '';
+
+            let hasBoosted = false;
+
+            data.users.forEach(u => {
+                let photo = (u.photos && u.photos.length > 0) ? u.photos[0] : 'https://via.placeholder.com/200';
+                let cardHTML = `
+                    <div class="profile-card" onclick="openChat('${u.email}')">
+                        <img src="${photo}" alt="avatar">
+                        <h4>${u.pseudo || 'Membre'}</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">${u.city || 'Reims'}</p>
+                    </div>
+                `;
+                if(u.sub_boost) {
+                    hasBoosted = true;
+                    boostedGrid.innerHTML += cardHTML;
                 } else {
-                    alert("Erreur de connexion au serveur.");
+                    grid.innerHTML += cardHTML;
                 }
-            })
-            .catch(err => {
-                console.error("Erreur:", err);
             });
+
+            if(!hasBoosted) {
+                boostedGrid.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Aucun profil mis en avant pour le moment.</p>';
+            }
+        }
+
+        async function loadAdminData() {
+            let res = await fetch('/api/admin/pending');
+            let data = await res.json();
+            if(!data.success) return;
+
+            let pendingList = document.getElementById('admin-pending-list');
+            pendingList.innerHTML = '';
+            if(data.pending.length === 0) {
+                pendingList.innerHTML = '<p style="color: var(--text-muted);">Aucune inscription en attente.</p>';
+            } else {
+                data.pending.forEach(p => {
+                    pendingList.innerHTML += `
+                        <div style="background: var(--card-bg); padding: 1rem; margin-bottom: 0.5rem; border-radius: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${p.email}</strong><br>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">${p.bio || ''}</span>
+                            </div>
+                            <button onclick="approveUser('${p.email}')">Valider</button>
+                        </div>
+                    `;
+                });
+            }
+
+            let msgList = document.getElementById('admin-messages-list');
+            msgList.innerHTML = '';
+            data.messages.forEach(m => {
+                msgList.innerHTML += `
+                    <div style="border-bottom: 1px solid var(--border-color); padding: 0.5rem 0; font-size: 0.85rem;">
+                        <strong>${m.sender_email}</strong> → <strong>${m.receiver_email}</strong> : ${m.content}
+                    </div>
+                `;
+            });
+        }
+
+        async function approveUser(email) {
+            let res = await fetch('/api/admin/approve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email})
+            });
+            let data = await res.json();
+            if(data.success) loadAdminData();
+        }
+
+        function openChat(email) {
+            activeChatUser = email;
+            document.getElementById('chat-with-title').innerText = `Discussion avec ${email}`;
+            switchView('view-chat-detail');
+            fetchMessages();
+        }
+
+        async function fetchMessages() {
+            if(!activeChatUser) return;
+            let res = await fetch(`/api/chat/messages?user=${activeChatUser}`);
+            let data = await res.json();
+            if(data.success) {
+                let chatBox = document.getElementById('chat-messages');
+                chatBox.innerHTML = '';
+                data.messages.forEach(m => {
+                    chatBox.innerHTML += `<div><strong>${m.sender} :</strong> ${m.content}</div>`;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        async function sendMessage() {
+            let content = document.getElementById('chat-input').value;
+            if(!content || !activeChatUser) return;
+
+            let res = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({receiver: activeChatUser, content})
+            });
+            let data = await res.json();
+            if(data.success) {
+                document.getElementById('chat-input').value = '';
+                fetchMessages();
+            }
+        }
+
+        async function saveProfile() {
+            let pseudo = document.getElementById('profile-pseudo').value;
+            let bio = document.getElementById('profile-bio').value;
+            let res = await fetch('/api/profile/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({pseudo, bio, photos: []})
+            });
+            let data = await res.json();
+            if(data.success) alert("Profil mis à jour !");
         }
     </script>
 </body>
