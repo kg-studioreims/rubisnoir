@@ -9,8 +9,11 @@
     <title>Rubis Noir</title>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Bibliothèque jwt-decode indispensable pour lire le token -->
+    <!-- Bibliothèque jwt-decode -->
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <!-- Firebase SDK (Compat v10) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --bg-color: #121212;
@@ -149,6 +152,33 @@
         h2 {
             margin-bottom: 16px;
             font-size: 1.3rem;
+        }
+
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         .pricing-grid {
@@ -462,7 +492,7 @@
     </header>
 
     <main>
-        <!-- VUE CONNEXION / ACCUEIL INITIAL (Parfaitement centré) -->
+        <!-- VUE CONNEXION / ACCUEIL INITIAL -->
         <section id="view-login" class="view-section active">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 20px; padding: 20px;">
                 <div class="logo" style="font-size: 2.2rem;">RUBIS NOIR</div>
@@ -483,25 +513,43 @@
                 <div style="font-size: 2.5rem; color: var(--primary-color);">🛡️</div>
                 <h2>Compte en cours de modération</h2>
                 <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">Votre profil nécessite un minimum de 2 photos de visage et une validation par l'administration. Veuillez patienter.</p>
+                <div style="margin-top: 15px; width: 100%; max-width: 300px; text-align: left;">
+                    <label style="font-size:0.85rem; color:var(--text-secondary); display:block; margin-bottom:6px;">Vos photos (min. 2) :</label>
+                    <input type="file" id="pending-photo-input" accept="image/*" style="display:none;" onchange="handlePendingPhotoUpload(this)">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;" id="pending-photos-container">
+                        <div style="width:60px; height:60px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary-color); cursor:pointer;" onclick="document.getElementById('pending-photo-input').click()">+</div>
+                    </div>
+                    <button class="btn-action" style="width:100%;" onclick="submitProfileForRealModeration()">Soumettre mon profil à l'Admin</button>
+                </div>
                 <button class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d; margin-top: 10px;" onclick="logoutUser()">Se déconnecter</button>
             </div>
         </section>
 
-        <!-- VUE ACCUEIL -->
+        <!-- VUE ACCUEIL (AVEC STATS EN TEMPS RÉEL) -->
         <section id="view-home" class="view-section">
-            <h2>Mise en avant & Profils</h2>
-            <div class="alert-box">
-                Charte Rubis Noir : Minimum 2 photos de visage et modération active.
-            </div>
-            <div class="profiles-grid" id="home-profiles-grid">
-                <div class="profile-grid-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'Passionné par l’univers Rubis Noir.')">
-                    <div class="profile-thumb">KG</div>
-                    <div class="profile-grid-info">
-                        <h4>Membre Actif</h4>
-                        <p>Reims</p>
-                    </div>
+            <h2>Tableau de Bord & Profils</h2>
+            <div class="stats-banner">
+                <div class="stat-card">
+                    <h4>Membres</h4>
+                    <div class="stat-value" id="stat-members">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Visites</h4>
+                    <div class="stat-value" id="stat-visits">0</div>
+                </div>
+                <div class="stat-card">
+                    <h4>Médias</h4>
+                    <div class="stat-value" id="stat-media">0</div>
                 </div>
             </div>
+            <div class="alert-box">
+                Charte Rubis Noir : Connexions actives, minimum 2 photos de visage et modération en temps réel.
+            </div>
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">Membres connectés & validés</h3>
+            <div class="profiles-grid" id="home-profiles-grid"></div>
+
+            <h3 style="font-size: 1rem; margin-bottom: 10px; margin-top: 16px;">Médias récents de la communauté</h3>
+            <div class="profiles-grid" id="home-media-grid"></div>
         </section>
 
         <!-- VUE MON PROFIL -->
@@ -509,7 +557,7 @@
             <h2>Mon Profil</h2>
             <div style="background:var(--surface-color); padding:16px; border-radius:8px; border:1px solid var(--border-color);">
                 <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-                    <div class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;">MO</div>
+                    <div class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;" id="my-profile-avatar-placeholder">MO</div>
                     <div>
                         <h3 id="my-profile-name" style="font-size:1.2rem;">Mon Compte</h3>
                         <p style="font-size:0.85rem; color:var(--text-secondary);">Gérez vos informations et vos photos (min. 2)</p>
@@ -542,7 +590,7 @@
                     <div id="detail-avatar" class="avatar-placeholder" style="width:65px;height:65px;font-size:1.2rem;">MA</div>
                     <div>
                         <h3 id="detail-name" style="font-size:1.2rem;">Nom du profil</h3>
-                        <p id="detail-city" style="font-size:0.85rem; color:var(--text-secondary);">Ville</p>
+                        <p id="detail-city" style="font-size:0.85rem; color:var(--text-secondary);">Reims</p>
                     </div>
                 </div>
                 <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
@@ -621,23 +669,13 @@
         <!-- VUE VISITEURS -->
         <section id="view-visitors" class="view-section">
             <h2>Visiteurs récents</h2>
-            <div class="profiles-grid">
-                <div class="profile-grid-card" onclick="openProfileDetail('Membre Actif', 'Reims', 'A consulté votre profil récemment.')">
-                    <div class="profile-thumb">P1</div>
-                    <div class="profile-grid-info">
-                        <h4>Membre Actif</h4>
-                        <p>Reims</p>
-                    </div>
-                </div>
-            </div>
+            <div class="profiles-grid" id="visitors-grid"></div>
         </section>
 
         <!-- VUE MESSAGES -->
         <section id="view-messages" class="view-section">
             <h2>Messagerie</h2>
-            <div id="conversations-list">
-                <!-- Boîte de messages vide au départ -->
-            </div>
+            <div id="conversations-list"></div>
         </section>
 
         <!-- VUE DETAIL DISCUSSION -->
@@ -655,8 +693,8 @@
                 <button class="icon-btn" onclick="document.getElementById('media-file-input').click()" title="Joindre une photo ou vidéo">
                     <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                 </button>
-                <input type="text" id="chat-text-input" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button class="btn-action" onclick="sendMessage()">Envoyer</button>
+                <input type="text" id="chat-text-input" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') sendMessageReal()">
+                <button class="btn-action" onclick="sendMessageReal()">Envoyer</button>
             </div>
         </section>
 
@@ -664,7 +702,7 @@
         <section id="view-developer" class="view-section">
             <h2>Espace Modération (Développeur)</h2>
             <div class="alert-box">
-                Panneau administrateur : gestion des inscriptions, validations des photos (min. 2), signalements et médias en conversation.
+                Panneau administrateur : gestion des inscriptions, validations des photos (min. 2), signalements et médias en temps réel.
             </div>
 
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Inscriptions & Photos (Minimum 2)</h3>
@@ -723,7 +761,7 @@
             <textarea id="report-reason" placeholder="Décrivez le problème..."></textarea>
             <div style="display: flex; gap: 8px;">
                 <button onclick="closeReportModal()" style="background:none; border:1px solid #333; color:#fff; padding:8px; border-radius:4px; cursor:pointer;">Annuler</button>
-                <button onclick="submitReport()" style="background:var(--primary-color); border:none; color:#fff; padding:8px; border-radius:4px; cursor:pointer; flex:1;">Envoyer</button>
+                <button onclick="submitReportReal()" style="background:var(--primary-color); border:none; color:#fff; padding:8px; border-radius:4px; cursor:pointer; flex:1;">Envoyer</button>
             </div>
         </div>
     </div>
@@ -756,12 +794,25 @@
     </nav>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "votre-projet.firebaseapp.com",
+            databaseURL: "https://votre-projet-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "votre-projet",
+            storageBucket: "votre-projet.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456:web:abcd"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
         let myPhotos = [];
         let isDeveloper = false;
         let isProfileApproved = false;
         let currentUserEmail = "";
         const ADMIN_EMAIL = "kg.studio.reims@gmail.com";
+        let activeChatUserId = null;
 
         if (window.Notification && Notification.permission !== "granted") {
             Notification.requestPermission();
@@ -812,121 +863,115 @@
             if (badge) badge.style.display = 'none';
         }
 
-        function openProfileDetail(name, city, bio) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
-            document.getElementById('detail-name').innerText = name;
-            document.getElementById('detail-city').innerText = city;
-            document.getElementById('detail-bio').innerText = bio;
-            document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
-            
-            const blockBtn = document.getElementById('block-user-btn');
-            if (isDeveloper) {
-                blockBtn.style.display = 'none';
-            } else {
-                blockBtn.style.display = 'block';
+        function sanitizeKey(email) {
+            return email.replace(/[.$#[\]/]/g, "_");
+        }
+
+        function handleCredentialResponse(response) {
+            try {
+                const data = jwt_decode(response.credential);
+                currentUserEmail = data.email;
+                const safeEmailKey = sanitizeKey(currentUserEmail);
+                const bioInput = document.getElementById('my-bio-input');
+                document.getElementById('my-profile-avatar-placeholder').innerText = currentUserEmail.substring(0, 2).toUpperCase();
+
+                // Enregistrer la connexion en temps réel dans Firebase
+                db.ref('connections/' + safeEmailKey).set({
+                    email: currentUserEmail,
+                    lastActive: Date.now()
+                });
+
+                if (currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                    isDeveloper = true;
+                    isProfileApproved = true;
+                    bioInput.value = "Créateur de l'application Rubis Noir.";
+                    document.getElementById('main-header').style.display = 'grid';
+                    document.getElementById('main-bottom-nav').style.display = 'flex';
+                    switchView('home', document.querySelector('.nav-item'));
+                    initAdminListeners();
+                    initPublicDataListeners();
+                } else {
+                    isDeveloper = false;
+                    db.ref('users/' + safeEmailKey).once('value', (snapshot) => {
+                        const userData = snapshot.val();
+                        if (userData && userData.approved) {
+                            isProfileApproved = true;
+                            bioInput.value = userData.bio || "";
+                            myPhotos = userData.photos || [];
+                            document.getElementById('main-header').style.display = 'grid';
+                            document.getElementById('main-bottom-nav').style.display = 'flex';
+                            switchView('home', document.querySelector('.nav-item'));
+                            initPublicDataListeners();
+                        } else {
+                            isProfileApproved = false;
+                            switchView('pending', null);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Erreur de décodage du token Google", e);
             }
-            document.getElementById('profile-detail-view').style.display = 'block';
         }
 
-        function closeProfileDetail() {
-            switchView('home', document.querySelector('.nav-item'));
-        }
-
-        function startChatFromProfile() {
-            const profileName = document.getElementById('detail-name').innerText;
-            openChat(profileName);
-        }
-
-        function openChat(title) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
-            document.getElementById('chat-title-header').innerText = title;
-            document.getElementById('chat-detail-view').style.display = 'flex';
-            
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.nav-item')[2].classList.add('active');
-            clearBadge('badge-messages');
-        }
-
-        function closeChat() {
-            switchView('messages', document.querySelectorAll('.nav-item')[2]);
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('chat-text-input');
-            const text = input.value.trim();
-            if (!text) return;
-            const box = document.getElementById('chat-messages-box');
-            const bubble = document.createElement('div');
-            bubble.className = 'message-bubble';
-            bubble.style.marginLeft = 'auto';
-            bubble.style.background = '#e50914';
-            bubble.innerText = text;
-            box.appendChild(bubble);
-            input.value = '';
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function handleMediaUpload(input) {
+        function handlePendingPhotoUpload(input) {
             if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const fileUrl = URL.createObjectURL(file);
-                const box = document.getElementById('chat-messages-box');
-                const bubble = document.createElement('div');
-                bubble.className = 'message-bubble';
-                bubble.style.marginLeft = 'auto';
-                bubble.style.background = '#e50914';
-                
-                const img = document.createElement('img');
-                img.src = fileUrl;
-                img.style.maxWidth = '100%';
-                img.style.borderRadius = '6px';
-                bubble.appendChild(img);
-                box.appendChild(bubble);
-                box.scrollTop = box.scrollHeight;
-
-                addMediaToDeveloperShield(fileUrl);
-                triggerRealNotification("Rubis Noir - Modération", "Un nouveau média a été envoyé en conversation.");
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    myPhotos.push(e.target.result);
+                    renderPendingPhotos();
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function addMediaToDeveloperShield(url) {
-            const container = document.getElementById('media-moderation-container');
-            if (container.innerHTML.includes('Aucun média')) container.innerHTML = '';
-            const card = document.createElement('div');
-            card.className = 'profile-card';
-            card.style.flexDirection = 'column';
-            card.style.alignItems = 'stretch';
-            card.style.gap = '8px';
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4>${currentUserEmail}</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">Photo partagée</span>
-                </div>
-                <div style="width:100%; height:120px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-                    <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
-                </div>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-action" style="padding:6px 10px; font-size:0.75rem;" onclick="openChat('${currentUserEmail}')">Ouvrir conversation</button>
-                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Supprimer le média</button>
-                </div>
-            `;
-            container.prepend(card);
-            const badge = document.getElementById('badge-shield');
-            if (badge) badge.style.display = 'block';
+        function renderPendingPhotos() {
+            const container = document.getElementById('pending-photos-container');
+            container.innerHTML = `<input type="file" id="pending-photo-input" accept="image/*" style="display:none;" onchange="handlePendingPhotoUpload(this)">`;
+            myPhotos.forEach((url) => {
+                const thumb = document.createElement('div');
+                thumb.style.cssText = "width:60px; height:60px; background:#333; border-radius:6px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;";
+                thumb.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
+                container.appendChild(thumb);
+            });
+            const addBtn = document.createElement('div');
+            addBtn.style.cssText = "width:60px; height:60px; background:var(--bg-color); border:1px dashed var(--border-color); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; color:var(--primary-color); cursor:pointer;";
+            addBtn.innerHTML = "+";
+            addBtn.onclick = () => document.getElementById('pending-photo-input').click();
+            container.appendChild(addBtn);
+        }
+
+        function submitProfileForRealModeration() {
+            if (myPhotos.length < 2) {
+                alert("Il vous faut au minimum 2 photos de visage pour soumettre votre profil.");
+                return;
+            }
+            const safeEmailKey = sanitizeKey(currentUserEmail);
+            db.ref('moderation/' + safeEmailKey).set({
+                email: currentUserEmail,
+                photos: myPhotos,
+                bio: "Nouveau membre",
+                timestamp: Date.now()
+            }, (error) => {
+                if (!error) {
+                    alert("Profil soumis à l'administration avec succès !");
+                }
+            });
         }
 
         function handleProfilePhotoUpload(input) {
             if (input.files && input.files[0]) {
-                myPhotos.push(URL.createObjectURL(input.files[0]));
-                renderMyPhotos();
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    myPhotos.push(e.target.result);
+                    renderMyPhotos();
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
 
         function renderMyPhotos() {
             const container = document.getElementById('my-photos-container');
-            container.innerHTML = `
-                <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">
-            `;
+            container.innerHTML = `<input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">`;
             myPhotos.forEach((url) => {
                 const thumb = document.createElement('div');
                 thumb.style.cssText = "width:60px; height:60px; background:#333; border-radius:6px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;";
@@ -945,33 +990,141 @@
                 alert("Il vous faut au minimum 2 photos de visage pour valider votre profil.");
                 return;
             }
-            alert("Modifications enregistrées. En attente de validation admin.");
-            if (!isDeveloper && !isProfileApproved) {
-                submitProfileForModeration();
-            }
+            const safeEmailKey = sanitizeKey(currentUserEmail);
+            const bio = document.getElementById('my-bio-input').value;
+            db.ref('users/' + safeEmailKey).update({
+                bio: bio,
+                photos: myPhotos
+            }, () => {
+                alert("Modifications enregistrées en base de données.");
+            });
         }
 
-        function submitProfileForModeration() {
+        // ECOUTEURS DONNÉES PUBLIQUES & STATISTIQUES ACCUEIL
+        function initPublicDataListeners() {
+            // Utilisateurs validés (Membres)
+            db.ref('users').on('value', (snapshot) => {
+                const users = snapshot.val() || {};
+                const grid = document.getElementById('home-profiles-grid');
+                grid.innerHTML = '';
+                let count = 0;
+                Object.values(users).forEach(u => {
+                    count++;
+                    const thumbUrl = (u.photos && u.photos.length > 0) ? u.photos[0] : '';
+                    const card = document.createElement('div');
+                    card.className = 'profile-grid-card';
+                    card.onclick = () => openProfileDetail(u.email, 'Reims', u.bio || 'Membre Rubis Noir');
+                    card.innerHTML = `
+                        <div class="profile-thumb">${thumbUrl ? `<img src="${thumbUrl}">` : u.email.substring(0,2).toUpperCase()}</div>
+                        <div class="profile-grid-info">
+                            <h4>${u.email.split('@')[0]}</h4>
+                            <p>Reims</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                document.getElementById('stat-members').innerText = count;
+            });
+
+            // Médias récents partagés
+            db.ref('media_shares').on('value', (snapshot) => {
+                const medias = snapshot.val() || {};
+                const grid = document.getElementById('home-media-grid');
+                grid.innerHTML = '';
+                let count = 0;
+                Object.values(medias).forEach(m => {
+                    count++;
+                    const card = document.createElement('div');
+                    card.className = 'profile-grid-card';
+                    card.onclick = () => openPhotoModal('Média de ' + m.author, m.url);
+                    card.innerHTML = `
+                        <div class="profile-thumb"><img src="${m.url}"></div>
+                        <div class="profile-grid-info">
+                            <h4>${m.author.split('@')[0]}</h4>
+                            <p>Partagé</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                document.getElementById('stat-media').innerText = count;
+            });
+
+            // Visites en temps réel
+            db.ref('visits').on('value', (snapshot) => {
+                const visits = snapshot.val() || {};
+                const count = Object.keys(visits).length;
+                document.getElementById('stat-visits').innerText = count;
+                
+                const visitorsGrid = document.getElementById('visitors-grid');
+                visitorsGrid.innerHTML = '';
+                Object.values(visits).forEach(v => {
+                    const card = document.createElement('div');
+                    card.className = 'profile-grid-card';
+                    card.innerHTML = `
+                        <div class="profile-thumb">👁️</div>
+                        <div class="profile-grid-info">
+                            <h4>Visiteur</h4>
+                            <p>${new Date(v.timestamp).toLocaleTimeString()}</p>
+                        </div>
+                    `;
+                    visitorsGrid.appendChild(card);
+                });
+            });
+        }
+
+        // ÉCOUTEURS TEMPS RÉEL POUR L'ADMINISTRATEUR
+        function initAdminListeners() {
+            db.ref('moderation').on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                const key = snapshot.key;
+                appendPendingProfileToUI(key, data);
+                triggerRealNotification("Rubis Noir - Modération", `Nouvelle inscription de ${data.email}`);
+                document.getElementById('badge-shield').style.display = 'block';
+            });
+
+            db.ref('moderation').on('child_removed', (snapshot) => {
+                const key = snapshot.key;
+                const el = document.getElementById('pending-' + key);
+                if (el) el.remove();
+            });
+
+            db.ref('reports').on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                appendReportToUI(snapshot.key, data);
+                triggerRealNotification("Rubis Noir - Modération", `Nouveau signalement reçu.`);
+                document.getElementById('badge-shield').style.display = 'block';
+            });
+
+            db.ref('media_shares').on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                appendMediaToUI(data);
+                triggerRealNotification("Rubis Noir - Modération", `Nouveau média partagé en conversation.`);
+                document.getElementById('badge-shield').style.display = 'block';
+            });
+        }
+
+        function appendPendingProfileToUI(key, data) {
             const container = document.getElementById('pending-profiles-container');
             if (container.innerHTML.includes('Aucune inscription')) container.innerHTML = '';
             
-            const cardId = 'pending-' + Date.now();
             const card = document.createElement('div');
-            card.id = cardId;
+            card.id = 'pending-' + key;
             card.className = 'profile-card';
             card.style.cssText = "flex-direction: column; align-items: stretch; gap: 10px; border-color: #f39c12;";
             
             let photosHtml = '';
-            myPhotos.forEach((url, i) => {
-                photosHtml += `<div style="width: 50px; height: 50px; background: #333; border-radius: 4px; overflow:hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink:0;" onclick="openPhotoModal('${currentUserEmail} - Photo ${i+1}', '${url}')"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"></div>`;
-            });
+            if (data.photos) {
+                data.photos.forEach((url, i) => {
+                    photosHtml += `<div style="width: 50px; height: 50px; background: #333; border-radius: 4px; overflow:hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink:0;" onclick="openPhotoModal('${data.email} - Photo ${i+1}', '${url}')"><img src="${url}" style="width:100%;height:100%;object-fit:cover;"></div>`;
+                });
+            }
 
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div class="profile-info">
-                        <div class="avatar-placeholder">${currentUserEmail.substring(0,2).toUpperCase()}</div>
+                        <div class="avatar-placeholder">${data.email.substring(0,2).toUpperCase()}</div>
                         <div>
-                            <h4>${currentUserEmail}</h4>
+                            <h4>${data.email}</h4>
                             <p style="font-size: 0.8rem; color: #f39c12;">● En attente de validation photo</p>
                         </div>
                     </div>
@@ -980,29 +1133,183 @@
                     ${photosHtml}
                 </div>
                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                    <button class="btn-report" onclick="rejectAccount('${cardId}')">Refuser</button>
-                    <button class="btn-action" onclick="approveAccount('${cardId}')">Valider le profil</button>
+                    <button class="btn-report" onclick="rejectAccountReal('${key}')">Refuser</button>
+                    <button class="btn-action" onclick="approveAccountReal('${key}', '${data.email}')">Valider le profil</button>
                 </div>
             `;
             container.prepend(card);
-            const badge = document.getElementById('badge-shield');
-            if (badge) badge.style.display = 'block';
         }
 
-        function approveAccount(cardId) {
-            const card = document.getElementById(cardId);
-            if (card) card.remove();
-            isProfileApproved = true;
-            document.getElementById('main-header').style.display = 'grid';
-            document.getElementById('main-bottom-nav').style.display = 'flex';
+        function approveAccountReal(key, email) {
+            const safeKey = sanitizeKey(email);
+            db.ref('moderation/' + key).once('value', (snap) => {
+                const val = snap.val();
+                if (val) {
+                    db.ref('users/' + safeKey).set({
+                        email: email,
+                        approved: true,
+                        photos: val.photos,
+                        bio: val.bio || ""
+                    }, () => {
+                        db.ref('moderation/' + key).remove();
+                    });
+                }
+            });
+        }
+
+        function rejectAccountReal(key) {
+            db.ref('moderation/' + key).remove();
+        }
+
+        function appendReportToUI(key, data) {
+            const container = document.getElementById('reports-container');
+            if (container.innerHTML.includes('Aucun signalement')) container.innerHTML = '';
+            
+            const card = document.createElement('div');
+            card.id = 'report-' + key;
+            card.className = 'profile-card';
+            card.style.cssText = "flex-direction: column; align-items: stretch; gap: 8px; border-color: #ff4d4d;";
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="color:#ff4d4d;">Cible : ${data.target}</h4>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">Signalé par ${data.author}</span>
+                </div>
+                <p style="font-size:0.85rem; background:var(--bg-color); padding:8px; border-radius:4px; border:1px solid var(--border-color);">${data.reason}</p>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-report" onclick="db.ref('reports/${key}').remove(); document.getElementById('report-${key}').remove();">Traiter / Supprimer</button>
+                </div>
+            `;
+            container.prepend(card);
+        }
+
+        function appendMediaToUI(data) {
+            const container = document.getElementById('media-moderation-container');
+            if (container.innerHTML.includes('Aucun média')) container.innerHTML = '';
+            const card = document.createElement('div');
+            card.className = 'profile-card';
+            card.style.flexDirection = 'column';
+            card.style.alignItems = 'stretch';
+            card.style.gap = '8px';
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>${data.author}</h4>
+                    <span style="font-size:0.75rem; color:var(--text-secondary);">Photo partagée</span>
+                </div>
+                <div style="width:100%; height:120px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <img src="${data.url}" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-action" style="padding:6px 10px; font-size:0.75rem;" onclick="openChat('${data.author}')">Ouvrir conversation</button>
+                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Supprimer le média</button>
+                </div>
+            `;
+            container.prepend(card);
+        }
+
+        function openChat(title) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('chat-title-header').innerText = title;
+            document.getElementById('chat-detail-view').style.display = 'flex';
+            
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+            clearBadge('badge-messages');
+
+            activeChatUserId = sanitizeKey(title);
+            loadChatMessages(activeChatUserId);
+        }
+
+        function loadChatMessages(chatId) {
+            const box = document.getElementById('chat-messages-box');
+            box.innerHTML = '';
+            db.ref('chats/' + chatId).on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                if (msg.sender === currentUserEmail) {
+                    bubble.style.marginLeft = 'auto';
+                    bubble.style.background = '#e50914';
+                } else {
+                    bubble.style.marginRight = 'auto';
+                }
+                if (msg.type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = msg.content;
+                    img.style.maxWidth = '100%';
+                    img.style.borderRadius = '6px';
+                    bubble.appendChild(img);
+                } else {
+                    bubble.innerText = msg.content;
+                }
+                box.appendChild(bubble);
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function sendMessageReal() {
+            const input = document.getElementById('chat-text-input');
+            const text = input.value.trim();
+            if (!text || !activeChatUserId) return;
+            
+            db.ref('chats/' + activeChatUserId).push({
+                sender: currentUserEmail,
+                content: text,
+                type: 'text',
+                timestamp: Date.now()
+            });
+            input.value = '';
+        }
+
+        function handleMediaUpload(input) {
+            if (input.files && input.files[0] && activeChatUserId) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileUrl = e.target.result;
+                    db.ref('chats/' + activeChatUserId).push({
+                        sender: currentUserEmail,
+                        content: fileUrl,
+                        type: 'image',
+                        timestamp: Date.now()
+                    });
+                    db.ref('media_shares').push({
+                        author: currentUserEmail,
+                        url: fileUrl,
+                        timestamp: Date.now()
+                    });
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function closeChat() {
+            switchView('messages', document.querySelectorAll('.nav-item')[2]);
+        }
+
+        function openProfileDetail(name, city, bio) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('detail-name').innerText = name;
+            document.getElementById('detail-city').innerText = city;
+            document.getElementById('detail-bio').innerText = bio;
+            document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
+            document.getElementById('profile-detail-view').style.display = 'block';
+
+            // Enregistrer une visite en temps réel
+            if (currentUserEmail && currentUserEmail !== name) {
+                db.ref('visits').push({
+                    visitor: currentUserEmail,
+                    target: name,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        function closeProfileDetail() {
             switchView('home', document.querySelector('.nav-item'));
-            triggerRealNotification("Rubis Noir", "Votre profil a été validé par l'administration !");
         }
 
-        function rejectAccount(cardId) {
-            const card = document.getElementById(cardId);
-            if (card) card.remove();
-            alert("Profil refusé.");
+        function startChatFromProfile() {
+            const profileName = document.getElementById('detail-name').innerText;
+            openChat(profileName);
         }
 
         function blockProfileUser() {
@@ -1010,7 +1317,7 @@
                 alert("Action impossible : le compte développeur possède l'immunité administrative.");
                 return;
             }
-            alert("Utilisateur bloqué. Les messages et interactions ont été supprimés.");
+            alert("Utilisateur bloqué.");
             closeProfileDetail();
         }
 
@@ -1029,46 +1336,6 @@
             document.getElementById('photo-preview-modal').style.display = 'none';
         }
 
-        function handleCredentialResponse(response) {
-            try {
-                const data = jwt_decode(response.credential);
-                currentUserEmail = data.email;
-                const bioInput = document.getElementById('my-bio-input');
-
-                if (currentUserEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                    isDeveloper = true;
-                    isProfileApproved = true;
-                    bioInput.value = "Créateur de l'application Rubis Noir.";
-                    document.getElementById('main-header').style.display = 'grid';
-                    document.getElementById('main-bottom-nav').style.display = 'flex';
-                    switchView('home', document.querySelector('.nav-item'));
-                } else {
-                    isDeveloper = false;
-                    bioInput.value = "";
-                    if (myPhotos.length >= 2 && isProfileApproved) {
-                        document.getElementById('main-header').style.display = 'grid';
-                        document.getElementById('main-bottom-nav').style.display = 'flex';
-                        switchView('home', document.querySelector('.nav-item'));
-                    } else {
-                        switchView('pending', null);
-                    }
-                }
-            } catch (e) {
-                console.error("Erreur de décodage du token Google", e);
-            }
-        }
-
-        function logoutUser() {
-            isDeveloper = false;
-            isProfileApproved = false;
-            currentUserEmail = "";
-            myPhotos = [];
-            document.getElementById('my-bio-input').value = "";
-            document.getElementById('main-header').style.display = 'none';
-            document.getElementById('main-bottom-nav').style.display = 'none';
-            switchView('login', null);
-        }
-
         let currentReportTarget = "";
         function openReportModal(targetName) {
             currentReportTarget = targetName;
@@ -1081,32 +1348,30 @@
             document.getElementById('report-reason').value = '';
         }
 
-        function submitReport() {
+        function submitReportReal() {
             const reason = document.getElementById('report-reason').value;
             if(!reason.trim()) return;
             
-            const container = document.getElementById('reports-container');
-            if (container.innerHTML.includes('Aucun signalement')) container.innerHTML = '';
-            
-            const card = document.createElement('div');
-            card.className = 'profile-card';
-            card.style.cssText = "flex-direction: column; align-items: stretch; gap: 8px; border-color: #ff4d4d;";
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="color:#ff4d4d;">Cible : ${currentReportTarget}</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">Signalé par ${currentUserEmail}</span>
-                </div>
-                <p style="font-size:0.85rem; background:var(--bg-color); padding:8px; border-radius:4px; border:1px solid var(--border-color);">${reason}</p>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Traiter / Supprimer</button>
-                </div>
-            `;
-            container.prepend(card);
-            const badge = document.getElementById('badge-shield');
-            if (badge) badge.style.display = 'block';
+            db.ref('reports').push({
+                target: currentReportTarget,
+                author: currentUserEmail,
+                reason: reason,
+                timestamp: Date.now()
+            }, () => {
+                closeReportModal();
+                alert("Signalement transmis à l'administration.");
+            });
+        }
 
-            closeReportModal();
-            triggerRealNotification("Rubis Noir - Modération", "Un signalement a été transmis à l'équipe.");
+        function logoutUser() {
+            isDeveloper = false;
+            isProfileApproved = false;
+            currentUserEmail = "";
+            myPhotos = [];
+            document.getElementById('my-bio-input').value = "";
+            document.getElementById('main-header').style.display = 'none';
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            switchView('login', null);
         }
 
         window.onclick = function(event) {
