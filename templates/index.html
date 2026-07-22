@@ -156,7 +156,7 @@
 
         .stats-banner {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 8px;
             margin-bottom: 16px;
         }
@@ -537,19 +537,16 @@
                     <h4>Visites</h4>
                     <div class="stat-value" id="stat-visits">0</div>
                 </div>
-                <div class="stat-card">
-                    <h4>Médias</h4>
-                    <div class="stat-value" id="stat-media">0</div>
-                </div>
             </div>
             <div class="alert-box">
                 Charte Rubis Noir : Connexions actives, minimum 2 photos de visage et modération en temps réel.
             </div>
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">Membres connectés & validés</h3>
-            <div class="profiles-grid" id="home-profiles-grid"></div>
 
-            <h3 style="font-size: 1rem; margin-bottom: 10px; margin-top: 16px;">Médias récents de la communauté</h3>
-            <div class="profiles-grid" id="home-media-grid"></div>
+            <h3 style="font-size: 1rem; margin-bottom: 10px; color: var(--primary-color);">Profils mis en avant</h3>
+            <div class="profiles-grid" id="home-featured-grid"></div>
+
+            <h3 style="font-size: 1rem; margin-bottom: 10px; margin-top: 16px;">Membres connectés & validés</h3>
+            <div class="profiles-grid" id="home-profiles-grid"></div>
         </section>
 
         <!-- VUE MON PROFIL -->
@@ -595,7 +592,11 @@
                 </div>
                 <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom:16px;">
                 <h4 style="font-size:0.95rem; margin-bottom:8px;">À propos</h4>
-                <p id="detail-bio" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:20px; line-height:1.4;">Description du membre...</p>
+                <p id="detail-bio" style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:16px; line-height:1.4;">Description du membre...</p>
+                
+                <h4 style="font-size:0.95rem; margin-bottom:8px;">Photos du membre</h4>
+                <div id="detail-photos-grid" class="profiles-grid" style="margin-bottom: 20px;"></div>
+
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <button class="btn-action" onclick="startChatFromProfile()">Envoyer un message</button>
                     <button id="block-user-btn" class="btn-report" style="background:#333; color:#ff4d4d; border-color:#ff4d4d;" onclick="blockProfileUser()">Bloquer cet utilisateur</button>
@@ -712,11 +713,6 @@
             <div id="reports-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
                 <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun signalement en cours.</p>
             </div>
-
-            <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Médias récents en conversation</h3>
-            <div id="media-moderation-container" style="display: flex; flex-direction: column; gap: 12px;">
-                <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun média récent.</p>
-            </div>
         </section>
 
         <!-- VUE PARAMÈTRES -->
@@ -746,7 +742,7 @@
     <div id="photo-preview-modal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="photo-modal-title" style="margin-bottom: 12px; color: #f39c12;">Aperçu Photo</h3>
-            <div id="modal-photo-container" style="width: 100%; height: 250px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 16px; overflow:hidden;">
+            <div id="modal-photo-container" style="width: 100%; height: 280px; background: #333; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); margin-bottom: 16px; overflow:hidden;">
                 [Photo HD / Visage]
             </div>
             <button onclick="closePhotoModal()" class="btn-action" style="width: 100%;">Fermer</button>
@@ -889,6 +885,7 @@
                     switchView('home', document.querySelector('.nav-item'));
                     initAdminListeners();
                     initPublicDataListeners();
+                    loadMyProfileData(safeEmailKey);
                 } else {
                     isDeveloper = false;
                     db.ref('users/' + safeEmailKey).once('value', (snapshot) => {
@@ -897,6 +894,7 @@
                             isProfileApproved = true;
                             bioInput.value = userData.bio || "";
                             myPhotos = userData.photos || [];
+                            renderMyPhotos();
                             document.getElementById('main-header').style.display = 'grid';
                             document.getElementById('main-bottom-nav').style.display = 'flex';
                             switchView('home', document.querySelector('.nav-item'));
@@ -910,6 +908,19 @@
             } catch (e) {
                 console.error("Erreur de décodage du token Google", e);
             }
+        }
+
+        function loadMyProfileData(safeEmailKey) {
+            db.ref('users/' + safeEmailKey).once('value', (snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    document.getElementById('my-bio-input').value = userData.bio || "";
+                    myPhotos = userData.photos || [];
+                } else {
+                    myPhotos = [];
+                }
+                renderMyPhotos();
+            });
         }
 
         function handlePendingPhotoUpload(input) {
@@ -926,10 +937,13 @@
         function renderPendingPhotos() {
             const container = document.getElementById('pending-photos-container');
             container.innerHTML = `<input type="file" id="pending-photo-input" accept="image/*" style="display:none;" onchange="handlePendingPhotoUpload(this)">`;
-            myPhotos.forEach((url) => {
+            myPhotos.forEach((url, index) => {
                 const thumb = document.createElement('div');
                 thumb.style.cssText = "width:60px; height:60px; background:#333; border-radius:6px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;";
-                thumb.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
+                thumb.innerHTML = `
+                    <img src="${url}" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="openPhotoModal('Photo', '${url}')">
+                    <button onclick="removePendingPhoto(${index})" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.7); color:#ff4d4d; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+                `;
                 container.appendChild(thumb);
             });
             const addBtn = document.createElement('div');
@@ -937,6 +951,11 @@
             addBtn.innerHTML = "+";
             addBtn.onclick = () => document.getElementById('pending-photo-input').click();
             container.appendChild(addBtn);
+        }
+
+        function removePendingPhoto(index) {
+            myPhotos.splice(index, 1);
+            renderPendingPhotos();
         }
 
         function submitProfileForRealModeration() {
@@ -971,10 +990,13 @@
         function renderMyPhotos() {
             const container = document.getElementById('my-photos-container');
             container.innerHTML = `<input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">`;
-            myPhotos.forEach((url) => {
+            myPhotos.forEach((url, index) => {
                 const thumb = document.createElement('div');
                 thumb.style.cssText = "width:60px; height:60px; background:#333; border-radius:6px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;";
-                thumb.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
+                thumb.innerHTML = `
+                    <img src="${url}" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="openPhotoModal('Mon Photo', '${url}')">
+                    <button onclick="removeMyPhoto(${index})" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.7); color:#ff4d4d; border:none; border-radius:50%; width:18px; height:18px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;">×</button>
+                `;
                 container.appendChild(thumb);
             });
             const addBtn = document.createElement('div');
@@ -982,6 +1004,11 @@
             addBtn.innerHTML = "+";
             addBtn.onclick = () => document.getElementById('profile-photo-input').click();
             container.appendChild(addBtn);
+        }
+
+        function removeMyPhoto(index) {
+            myPhotos.splice(index, 1);
+            renderMyPhotos();
         }
 
         function saveMyProfile() {
@@ -994,8 +1021,12 @@
             db.ref('users/' + safeEmailKey).update({
                 bio: bio,
                 photos: myPhotos
-            }, () => {
-                alert("Modifications enregistrées en base de données.");
+            }, (error) => {
+                if(!error) {
+                    alert("Modifications enregistrées en base de données.");
+                } else {
+                    alert("Erreur lors de l'enregistrement.");
+                }
             });
         }
 
@@ -1003,14 +1034,19 @@
             db.ref('users').on('value', (snapshot) => {
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('home-profiles-grid');
+                const featuredGrid = document.getElementById('home-featured-grid');
                 grid.innerHTML = '';
+                featuredGrid.innerHTML = '';
                 let count = 0;
+                
                 Object.values(users).forEach(u => {
                     count++;
                     const thumbUrl = (u.photos && u.photos.length > 0) ? u.photos[0] : '';
+                    
+                    // Carte classique membres
                     const card = document.createElement('div');
                     card.className = 'profile-grid-card';
-                    card.onclick = () => openProfileDetail(u.email, 'Reims', u.bio || 'Membre Rubis Noir');
+                    card.onclick = () => openProfileDetail(u.email, 'Reims', u.bio || 'Membre Rubis Noir', u.photos || []);
                     card.innerHTML = `
                         <div class="profile-thumb">${thumbUrl ? `<img src="${thumbUrl}">` : u.email.substring(0,2).toUpperCase()}</div>
                         <div class="profile-grid-info">
@@ -1019,30 +1055,21 @@
                         </div>
                     `;
                     grid.appendChild(card);
-                });
-                document.getElementById('stat-members').innerText = count;
-            });
 
-            db.ref('media_shares').on('value', (snapshot) => {
-                const medias = snapshot.val() || {};
-                const grid = document.getElementById('home-media-grid');
-                grid.innerHTML = '';
-                let count = 0;
-                Object.values(medias).forEach(m => {
-                    count++;
-                    const card = document.createElement('div');
-                    card.className = 'profile-grid-card';
-                    card.onclick = () => openPhotoModal('Média de ' + m.author, m.url);
-                    card.innerHTML = `
-                        <div class="profile-thumb"><img src="${m.url}"></div>
+                    // Carte mis en avant (on prend les premiers)
+                    const featuredCard = document.createElement('div');
+                    featuredCard.className = 'profile-grid-card';
+                    featuredCard.onclick = () => openProfileDetail(u.email, 'Reims', u.bio || 'Membre Rubis Noir', u.photos || []);
+                    featuredCard.innerHTML = `
+                        <div class="profile-thumb">${thumbUrl ? `<img src="${thumbUrl}">` : u.email.substring(0,2).toUpperCase()}</div>
                         <div class="profile-grid-info">
-                            <h4>${m.author.split('@')[0]}</h4>
-                            <p>Partagé</p>
+                            <h4>★ ${u.email.split('@')[0]}</h4>
+                            <p>Mis en avant</p>
                         </div>
                     `;
-                    grid.appendChild(card);
+                    featuredGrid.appendChild(featuredCard);
                 });
-                document.getElementById('stat-media').innerText = count;
+                document.getElementById('stat-members').innerText = count;
             });
 
             db.ref('visits').on('value', (snapshot) => {
@@ -1086,13 +1113,6 @@
                 const data = snapshot.val();
                 appendReportToUI(snapshot.key, data);
                 triggerRealNotification("Rubis Noir - Modération", `Nouveau signalement reçu.`);
-                document.getElementById('badge-shield').style.display = 'block';
-            });
-
-            db.ref('media_shares').on('child_added', (snapshot) => {
-                const data = snapshot.val();
-                appendMediaToUI(data);
-                triggerRealNotification("Rubis Noir - Modération", `Nouveau média partagé en conversation.`);
                 document.getElementById('badge-shield').style.display = 'block';
             });
         }
@@ -1176,30 +1196,6 @@
             container.prepend(card);
         }
 
-        function appendMediaToUI(data) {
-            const container = document.getElementById('media-moderation-container');
-            if (container.innerHTML.includes('Aucun média')) container.innerHTML = '';
-            const card = document.createElement('div');
-            card.className = 'profile-card';
-            card.style.flexDirection = 'column';
-            card.style.alignItems = 'stretch';
-            card.style.gap = '8px';
-            card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4>${data.author}</h4>
-                    <span style="font-size:0.75rem; color:var(--text-secondary);">Photo partagée</span>
-                </div>
-                <div style="width:100%; height:120px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-                    <img src="${data.url}" style="width:100%; height:100%; object-fit:cover;">
-                </div>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-action" style="padding:6px 10px; font-size:0.75rem;" onclick="openChat('${data.author}')">Ouvrir conversation</button>
-                    <button class="btn-report" onclick="this.closest('.profile-card').remove()">Supprimer le média</button>
-                </div>
-            `;
-            container.prepend(card);
-        }
-
         function openChat(title) {
             document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
             document.getElementById('chat-title-header').innerText = title;
@@ -1231,6 +1227,8 @@
                     img.src = msg.content;
                     img.style.maxWidth = '100%';
                     img.style.borderRadius = '6px';
+                    img.style.cursor = 'pointer';
+                    img.onclick = () => openPhotoModal('Photo partagée', msg.content);
                     bubble.appendChild(img);
                 } else {
                     bubble.innerText = msg.content;
@@ -1265,11 +1263,6 @@
                         type: 'image',
                         timestamp: Date.now()
                     });
-                    db.ref('media_shares').push({
-                        author: currentUserEmail,
-                        url: fileUrl,
-                        timestamp: Date.now()
-                    });
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1279,12 +1272,27 @@
             switchView('messages', document.querySelectorAll('.nav-item')[2]);
         }
 
-        function openProfileDetail(name, city, bio) {
+        function openProfileDetail(name, city, bio, photos) {
             document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
             document.getElementById('detail-name').innerText = name;
             document.getElementById('detail-city').innerText = city;
             document.getElementById('detail-bio').innerText = bio;
             document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
+            
+            const detailPhotosGrid = document.getElementById('detail-photos-grid');
+            detailPhotosGrid.innerHTML = '';
+            if (photos && photos.length > 0) {
+                photos.forEach((url, i) => {
+                    const thumb = document.createElement('div');
+                    thumb.className = 'profile-grid-card';
+                    thumb.onclick = () => openPhotoModal(`${name} - Photo ${i+1}`, url);
+                    thumb.innerHTML = `<div class="profile-thumb"><img src="${url}"></div>`;
+                    detailPhotosGrid.appendChild(thumb);
+                });
+            } else {
+                detailPhotosGrid.innerHTML = '<p style="font-size:0.85rem; color:var(--text-secondary);">Aucune photo disponible.</p>';
+            }
+
             document.getElementById('profile-detail-view').style.display = 'block';
 
             if (currentUserEmail && currentUserEmail !== name) {
@@ -1318,7 +1326,7 @@
             document.getElementById('photo-modal-title').innerText = title;
             const container = document.getElementById('modal-photo-container');
             if (url) {
-                container.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;">`;
+                container.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;cursor:pointer;">`;
             } else {
                 container.innerHTML = '[Photo HD / Visage]';
             }
