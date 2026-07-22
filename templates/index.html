@@ -9,7 +9,8 @@
     <title>Rubis Noir</title>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jwt-decode/3.1.2/jwt-decode.min.js"></script>
+    <!-- Bibliothèque jwt-decode indispensable pour lire le token -->
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
     <style>
         :root {
             --bg-color: #121212;
@@ -138,6 +139,7 @@
 
         .view-section {
             display: none;
+            height: 100%;
         }
 
         .view-section.active {
@@ -460,12 +462,12 @@
     </header>
 
     <main>
-        <!-- VUE CONNEXION / ACCUEIL INITIAL -->
+        <!-- VUE CONNEXION / ACCUEIL INITIAL (Parfaitement centré) -->
         <section id="view-login" class="view-section active">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 20px; padding: 20px;">
-                <div class="logo" style="font-size: 2rem;">RUBIS NOIR</div>
+                <div class="logo" style="font-size: 2.2rem;">RUBIS NOIR</div>
                 <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 300px; line-height: 1.4;">Connectez-vous pour accéder à votre espace sécurisé et soumettre vos photos de visage (2 minimum requises).</p>
-                <div id="auth-container" style="margin-top: 20px;">
+                <div id="auth-container" style="margin-top: 10px;">
                     <div id="g_id_onload"
                          data-client_id="560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com"
                          data-callback="handleCredentialResponse">
@@ -665,19 +667,14 @@
                 Panneau administrateur : gestion des inscriptions, validations des photos (min. 2), signalements et médias en conversation.
             </div>
 
-            <!-- SECTION 1 : INSCRIPTIONS & PHOTOS EN ATTENTE -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #f39c12;">Inscriptions & Photos (Minimum 2)</h3>
-            <div id="pending-profiles-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
-                <!-- Les inscriptions s'ajouteront dynamiquement ici l'une sous l'autre -->
-            </div>
+            <div id="pending-profiles-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;"></div>
 
-            <!-- SECTION 2 : SIGNALEMENTS -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: #ff4d4d; margin-top:16px;">Signalements reçus</h3>
             <div id="reports-container" style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px;">
                 <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun signalement en cours.</p>
             </div>
 
-            <!-- SECTION 3 : MÉDIAS ENVOYÉS EN CONVERSATION -->
             <h3 style="font-size: 1.05rem; margin-bottom: 10px; color: var(--primary-color);">Médias récents en conversation</h3>
             <div id="media-moderation-container" style="display: flex; flex-direction: column; gap: 12px;">
                 <p style="font-size: 0.85rem; color: var(--text-secondary);">Aucun média récent.</p>
