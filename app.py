@@ -9,6 +9,13 @@ from google.auth.transport import requests as google_requests
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+# Middleware pour autoriser la communication de la popup Google (Cross-Origin-Opener-Policy)
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Cross-Origin-Opener-Policy'] = 'unsafe-none'
+    response.headers['Cross-Origin-Embedder-Policy'] = 'unsafe-none'
+    return response
+
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com")
 DATABASE = '/data/rubis_noir.db' if os.path.exists('/data') else 'rubis_noir.db'
 ADMIN_EMAIL = 'kg.studio.reims@gmail.com'
@@ -71,7 +78,6 @@ def google_auth():
     is_admin = 1 if email.lower() == ADMIN_EMAIL.lower() else 0
     
     if not row:
-        # Les nouveaux utilisateurs entrent directement pour pouvoir ajouter leurs photos de profil
         initial_approval = 1 if is_admin else 1 
         db.execute('INSERT INTO users (email, pseudo, photos, albums, approved) VALUES (?, ?, ?, ?, ?)', 
                    (email, email.split('@')[0], '[]', '', initial_approval))
@@ -100,14 +106,12 @@ def update_profile():
     if not user_email: return jsonify({'success': False}), 401
     data = request.json
     db = get_db()
-    photos = data.get('photos', [])[:5] # Limite stricte à 5 photos
+    photos = data.get('photos', [])[:5]
     photos_str = json.dumps(photos)
     
-    # Vérification du nombre de photos pour le statut validé (sauf pour l'admin)
     if user_email.lower() == ADMIN_EMAIL.lower():
         approved_status = 1
     else:
-        # Si moins de 2 photos, repasse en non approuvé pour forcer la mise en conformité
         approved_status = 1 if len(photos) >= 2 else 0
 
     db.execute('UPDATE users SET pseudo = ?, bio = ?, photos = ?, albums = ?, approved = ? WHERE email = ?', 
