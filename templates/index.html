@@ -911,19 +911,25 @@
                         isProfileApproved = true;
                         bioInput.value = userData.bio || "";
                         myPhotos = userData.photos || [];
-                        renderMyPhotos();
-                        document.getElementById('main-header').style.display = 'grid';
-                        document.getElementById('main-bottom-nav').style.display = 'flex';
-                        switchView('home', document.querySelector('.nav-item'));
-                        initPublicDataListeners();
                     } else {
                         isProfileApproved = false;
-                        switchView('pending', null);
+                        myPhotos = userData && userData.photos ? userData.photos : [];
+                        bioInput.value = userData && userData.bio ? userData.bio : "";
                     }
+                    renderMyPhotos();
+                    document.getElementById('main-header').style.display = 'grid';
+                    document.getElementById('main-bottom-nav').style.display = 'flex';
+                    switchView('my-profile', document.querySelectorAll('.nav-item')[4]);
+                    initPublicDataListeners();
                 }).catch((error) => {
                     console.error("Firebase Auth Error:", error);
                     isProfileApproved = false;
-                    switchView('pending', null);
+                    myPhotos = [];
+                    renderMyPhotos();
+                    document.getElementById('main-header').style.display = 'grid';
+                    document.getElementById('main-bottom-nav').style.display = 'flex';
+                    switchView('my-profile', document.querySelectorAll('.nav-item')[4]);
+                    initPublicDataListeners();
                 });
             }
         }
