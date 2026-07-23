@@ -798,6 +798,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCuhSVhwvKGp4LY0t67eYjR7xHkaUnpD0I",
             authDomain: "rubis-noir-72b06.firebaseapp.com",
+            databaseURL: "https://rubis-noir-72b06-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "rubis-noir-72b06",
             storageBucket: "rubis-noir-72b06.appspot.com",
             messagingSenderId: "790666768266",
@@ -806,6 +807,21 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        // Désactivation explicite de FedCM pour éviter l'AbortError sur la popup Google
+        window.onload = function() {
+            if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+                google.accounts.id.initialize({
+                    client_id: "560049435242-df5euisq5nhg5q7rsldlmfa8bdun5go6.apps.googleusercontent.com",
+                    callback: handleCredentialResponse,
+                    use_fedcm_for_prompt: false
+                });
+                google.accounts.id.renderButton(
+                    document.querySelector(".g_id_signin"),
+                    { theme: "outline", size: "large" }
+                );
+            }
+        };
 
         const FRENCH_CITIES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille", "Rennes", "Reims", "Le Havre", "Saint-Étienne", "Toulon", "Grenoble", "Dijon", "Angers", "Villeurbanne", "Saint-Denis"];
         let myPhotos = [];
