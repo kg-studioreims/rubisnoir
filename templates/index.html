@@ -798,6 +798,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyCuhSVhwvKGp4LY0t67eYjR7xHkaUnpD0I",
             authDomain: "rubis-noir-72b06.firebaseapp.com",
+            databaseURL: "https://rubis-noir-72b06-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "rubis-noir-72b06",
             storageBucket: "rubis-noir-72b06.appspot.com",
             messagingSenderId: "790666768266",
@@ -865,7 +866,7 @@
         }
 
         function sanitizeKey(email) {
-            return email.replace(/[.$#[\]/]/g, "_");
+            return email.replace/[.$#[\]/]/g, "_");
         }
 
         function handleCredentialResponse(response) {
@@ -918,6 +919,7 @@
                         initPublicDataListeners();
                     } else {
                         isProfileApproved = false;
+                        loadMyProfileData(safeEmailKey);
                         switchView('pending', null);
                     }
                 }).catch((error) => {
@@ -938,6 +940,7 @@
                     myPhotos = [];
                 }
                 renderMyPhotos();
+                renderPendingPhotos();
             });
         }
 
@@ -954,6 +957,7 @@
 
         function renderPendingPhotos() {
             const container = document.getElementById('pending-photos-container');
+            if (!container) return;
             container.innerHTML = `<input type="file" id="pending-photo-input" accept="image/*" style="display:none;" onchange="handlePendingPhotoUpload(this)">`;
             myPhotos.forEach((url, index) => {
                 const thumb = document.createElement('div');
@@ -990,6 +994,8 @@
             }, (error) => {
                 if (!error) {
                     alert("Profil soumis à l'administration avec succès !");
+                } else {
+                    alert("Erreur Firebase : " + error.message);
                 }
             });
         }
@@ -1007,6 +1013,7 @@
 
         function renderMyPhotos() {
             const container = document.getElementById('my-photos-container');
+            if (!container) return;
             container.innerHTML = `<input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="handleProfilePhotoUpload(this)">`;
             myPhotos.forEach((url, index) => {
                 const thumb = document.createElement('div');
@@ -1043,7 +1050,7 @@
                 if(!error) {
                     alert("Modifications enregistrées en base de données.");
                 } else {
-                    alert("Erreur lors de l'enregistrement.");
+                    alert("Erreur d'enregistrement Firebase : " + error.message);
                 }
             });
         }
@@ -1053,6 +1060,7 @@
                 const users = snapshot.val() || {};
                 const grid = document.getElementById('home-profiles-grid');
                 const featuredGrid = document.getElementById('home-featured-grid');
+                if(!grid || !featuredGrid) return;
                 grid.innerHTML = '';
                 featuredGrid.innerHTML = '';
                 let count = 0;
@@ -1094,6 +1102,7 @@
                 document.getElementById('stat-visits').innerText = count;
                
                 const visitorsGrid = document.getElementById('visitors-grid');
+                if(!visitorsGrid) return;
                 visitorsGrid.innerHTML = '';
                 Object.values(visits).forEach(v => {
                     const card = document.createElement('div');
@@ -1140,6 +1149,7 @@
 
         function renderAllMediaForModeration(allChats) {
             const container = document.getElementById('media-moderation-container');
+            if(!container) return;
             container.innerHTML = '';
             let hasMedia = false;
             if(allChats) {
@@ -1176,6 +1186,7 @@
 
         function appendPendingProfileToUI(key, data) {
             const container = document.getElementById('pending-profiles-container');
+            if(!container) return;
             if (container.innerHTML.includes('Aucune inscription')) container.innerHTML = '';
            
             const card = document.createElement('div');
@@ -1234,6 +1245,7 @@
 
         function appendReportToUI(key, data) {
             const container = document.getElementById('reports-container');
+            if(!container) return;
             if (container.innerHTML.includes('Aucun signalement')) container.innerHTML = '';
            
             const card = document.createElement('div');
@@ -1268,6 +1280,7 @@
 
         function loadChatMessages(chatId) {
             const box = document.getElementById('chat-messages-box');
+            if(!box) return;
             box.innerHTML = '';
             db.ref('chats/' + chatId).on('child_added', (snapshot) => {
                 const msg = snapshot.val();
@@ -1337,6 +1350,7 @@
             document.getElementById('detail-avatar').innerText = name.substring(0, 2).toUpperCase();
            
             const detailPhotosGrid = document.getElementById('detail-photos-grid');
+            if(!detailPhotosGrid) return;
             detailPhotosGrid.innerHTML = '';
             if (photos && photos.length > 0) {
                 photos.forEach((url, i) => {
@@ -1434,7 +1448,8 @@
 
         window.onclick = function(event) {
             if (!event.target.closest('.header-search')) {
-                document.getElementById('city-suggestions').style.display = 'none';
+                const sugg = document.getElementById('city-suggestions');
+                if (sugg) sugg.style.display = 'none';
             }
         }
 
